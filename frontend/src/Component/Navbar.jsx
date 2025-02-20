@@ -17,7 +17,7 @@ import { RiLogoutBoxRLine } from "react-icons/ri";
 import { NavLink, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import axios from "axios";
-import './Navbar.css'
+import './NavBar.css'
 
 const Navbar = ({ children, setToken }) => {
   const [isOpen, setIsOpen] = useState(false);
