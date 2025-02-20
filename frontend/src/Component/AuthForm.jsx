@@ -111,8 +111,8 @@ const AuthForm = ({ setToken }) => {
         : formData; // Send entire formData for registration
 
       const url = isLogin
-        ? "https://aimpsserver.vercel.app/login"
-        : "https://aimpsserver.vercel.app/register";
+        ? "https://aimps-server.vercel.app/api/login"
+        : "https://aimps-server.vercel.app/api/register";
 
       const { data } = await axios.post(url, payload);
 
