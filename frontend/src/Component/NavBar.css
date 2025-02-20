@@ -1,0 +1,152 @@
+
+.navbar {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+}
+
+.sidebar {
+  background: rgb(16, 35, 41);
+  color: #fff;
+  height: auto;
+  transition: all 1s ease-in-out;
+  max-width: 150px; 
+  width: 50px;
+}
+
+main {
+  width: calc(100% - 50px);
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  transition: width 1s ease-in-out;
+}
+
+.sidebar.expanded {
+  width: 150px;
+}
+
+main.expanded {
+  width: calc(100% - 150px);
+}
+  
+  .top_section {
+    display: flex;
+    align-items: center;
+    padding: 20px 15px;
+  }
+  
+  
+  .logo {
+    position: absolute;
+    top: -30px;
+    left: 20px;
+    color: white;
+    font-size: 20px;
+    transition: opacity 0.3s ease;
+  }
+  
+  .bars {
+    display: flex;
+    font-size: 25px;
+    margin-left: 50px;
+  }
+  
+  .link {
+    display: flex;
+    color: #fff;
+    padding: 10px 15px;
+    gap: 15px;
+    transition: all 0.5s;
+    text-decoration: none;
+  }
+  
+  .link:hover {
+    background: royalblue;
+    color: #000;
+    transition: all 0.5s;
+    border-radius: 20px 0px 0px 20px;
+  }
+  
+  .active {
+    background: rgb(8, 137, 216);
+    color: #000;
+    border-radius: 20px 0px 0px 20px;
+  }
+  .icon{
+    font-size: 20px;
+  }
+  
+  .icon,
+  .link_text {
+    font-size: 18px;
+    text-decoration: none;
+  }
+  
+  .logout-main {
+    display: flex;
+    align-items: center;
+    padding: 10px 10px 5px 10px;
+  }
+  
+  .logout-main:hover {
+    background: royalblue;
+    color: #000;
+    transition: all 0.5s;
+    border-radius: 20px 2px 2px 20px;
+  }
+  
+  .logout-icon {
+    font-size: 23px;
+    cursor: pointer;
+  }
+  
+  .logout {
+    font-size: 20px;
+    margin-left: 10px;
+    border: none;
+    cursor: pointer;
+    color: #fff;
+    background: none;
+    vertical-align: middle;
+  }
+  
+  .logout:hover {
+    background: none;
+  }
+  
+  .userContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .userContainer img {
+    height: 100px;
+    width: 100px;
+    border-radius: 50%;
+    border: 2px solid white;
+    margin-bottom: 20px;
+  }
+  
+  .userContainer span {
+  
+    text-transform: capitalize;
+    font-weight: 700;
+    font-size: large;
+    color: #aeb1b4;
+  }
+  
+  .userContainer p {
+    text-transform: capitalize;
+    font-size: larger;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.468);
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  

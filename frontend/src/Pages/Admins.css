@@ -1,0 +1,140 @@
+.admin-container {
+    padding:2px;
+    background-color: #ffffff7d;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    width:95%;
+    box-sizing: border-box;
+    max-width: max-content;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: auto;
+    margin-bottom: 10px;
+    margin-top: 10px;
+  
+}
+
+
+.admin-header {
+  text-align: center;
+  font-size: 24px;
+  color: black;
+  margin: 20px;
+}
+
+
+
+.admin-table-container {
+  max-width: 100%;
+  overflow-x: scroll;
+}
+
+
+
+.admin-table {
+  width: auto;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 12px;
+  border: 1px solid #ddd;
+}
+
+.admin-table th {
+  background: green;
+  font-weight: bold;
+  color: white;
+}
+
+.admin-table tr {
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.admin-table tr:hover {
+  background: rgba(152, 152, 152, 0.3);
+}
+
+.admin-button-container {
+  display: flex;
+  flex-direction: column;
+  column-gap: 10px;
+}
+
+.admin-edit-btn,
+.admin-delete-btn {
+  margin: 5px ;
+  padding: 8px;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.admin-edit-btn {
+  background: #4caf50;
+}
+
+.admin-edit-btn:hover {
+  background: rgb(2, 73, 2);
+  transform: scale(1.05);
+}
+
+.admin-delete-btn {
+  background: #f44336;
+}
+
+.admin-delete-btn:hover {
+  background: rgb(155, 3, 3);
+  transform: scale(1.05);
+}
+
+@media (max-width: 768px) {
+ 
+
+  .admin-header {
+    font-size: 20px;
+  }
+
+  .admin-search-bar-group {
+    height: 50px;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    font-size: 14px;
+    padding: 8px;
+  }
+}
+
+@media (max-width: 600px) {
+ 
+
+  .addAdmin-btn {
+    font-size: 14px;
+    padding: 8px;
+  }
+
+  .admin-search-bar-group {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 400px) {
+  
+
+  .admin-header {
+    font-size: 18px;
+  }
+
+  .addAdmin-btn {
+    font-size: 12px;
+  }
+}
