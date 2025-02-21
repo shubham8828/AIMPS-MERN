@@ -25,7 +25,7 @@ const Admins = () => {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const usersResponse = await axios.get("http://localhost:4000/api/users", {
+      const usersResponse = await axios.get("https://aimps-server.vercel.app/api/users", {
         headers,
       });
       setUsers(usersResponse.data.users);
