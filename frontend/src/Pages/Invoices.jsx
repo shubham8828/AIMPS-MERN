@@ -27,7 +27,7 @@ const Invoices = () => {
   const fetchInvoices = async () => {
     setLoading(true);
     try {
-      const response = await axios.get("https://aimps-server.vercel.app/api/invoices", {
+      const response = await axios.get("http://localhost:4000/api/invoices", {
         headers,
       });
       const { invoices, user } = response.data;
@@ -54,7 +54,7 @@ const Invoices = () => {
 
     try {
       await axios
-        .delete(`https://aimps-server.vercel.app/api/delete/${id}`, { headers })
+        .delete(`http://localhost:4000/api/delete/${id}`, { headers })
         .then((res) => {
           toast.success(res.data.msg, { position: "top-center" });
           setAllInvoices(allInvoices.filter((invoice) => invoice._id !== id));

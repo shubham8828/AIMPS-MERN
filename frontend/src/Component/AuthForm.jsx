@@ -111,10 +111,9 @@ const AuthForm = ({ setToken }) => {
         : formData; // Send entire formData for registration
 
       const url = isLogin
-        ? "https://aimps-server.vercel.app/api/login"
-        : "https://aimps-server.vercel.app/api/register";
+        ? "http://localhost:4000/api/login"
+        : "http://localhost:4000/api/register";
 
-        
       const { data } = await axios.post(url, payload);
 
       // console.log( data.user.role)
@@ -253,6 +252,7 @@ const AuthForm = ({ setToken }) => {
                     minLength={8}
                     maxLength={20}
                     autoComplete="on"
+                    title="Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)."
                     placeholder="Enter a strong password"
                   />
                 </div>

@@ -62,7 +62,7 @@ const Profile = () => {
     const fetchUserData = async () => {
       setLoading(true);
       try {
-        const res = await axios.get("https://aimps-server.vercel.app/api/user", {
+        const res = await axios.get("http://localhost:4000/api/user", {
           headers,
         });
 
@@ -111,7 +111,7 @@ const Profile = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await axios.put("https://aimps-server.vercel.app/api/update", formData, {
+      await axios.put("http://localhost:4000/api/update", formData, {
         headers,
       });
       toast.success("Profile updated successfully", { position: "top-center" });

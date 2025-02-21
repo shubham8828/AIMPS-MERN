@@ -131,11 +131,11 @@ const Payment = () => {
         };
         // Sending payment data to the backend using axios
         const response = await axios.post(
-          "https://aimps-server.vercel.app/api/payment",
+          "http://localhost:4000/api/payment",
           { transactionData },
           { headers }
         );
-        //console.log("Payment data sent to server:", response.data);
+        console.log("Payment data sent to server:", response.data);
 
         // Handle any success response from your server if necessary
         // You can navigate to a different page if needed after the response

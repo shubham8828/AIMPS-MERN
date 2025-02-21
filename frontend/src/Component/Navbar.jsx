@@ -17,7 +17,7 @@ import { RiLogoutBoxRLine } from "react-icons/ri";
 import { NavLink, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import axios from "axios";
-import './NavBar.css'
+import './Navbar.css';
 
 const Navbar = ({ children, setToken }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -57,7 +57,7 @@ const Navbar = ({ children, setToken }) => {
       };
 
       const response = await axios.get(
-        "https://aimps-server.vercel.app/api/user", { headers }
+        "http://localhost:4000/api/user", { headers }
       );
       if (response.status === 404) {
         localStorage.clear();
@@ -102,9 +102,9 @@ const Navbar = ({ children, setToken }) => {
         </div>
         {isOpen && token && (
           <div className="userContainer">
-            <img src={user.image} alt="User" />
-            <span>{user.role}</span>
-            <p>{user.name}</p>
+            <img src={user&&user.image} alt="User" />
+            <span>{user&&user.role}</span>
+            <p>{user&&user.name}</p>
           </div>
         )}
         {filteredMenu.map((item, index) => (

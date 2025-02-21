@@ -4,7 +4,7 @@
   flex-direction: row;
   width: 100%;
   max-width: 100%;
-  height: auto;
+  min-height: 100vh;
 }
 
 .sidebar {
@@ -14,6 +14,7 @@
   transition: all 1s ease-in-out;
   max-width: 150px; 
   width: 50px;
+  z-index: 5;
 }
 
 main {

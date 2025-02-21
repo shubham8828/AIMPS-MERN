@@ -30,9 +30,9 @@ const Message = () => {
   }, [selectedUser, users]);
 
   const fetchData = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
-      const usersResponse = await axios.get("https://aimps-server.vercel.app/api/users", {
+      const usersResponse = await axios.get("http://localhost:4000/api/users", {
         headers,
       });
       setUsers(usersResponse.data.users);
@@ -40,7 +40,7 @@ const Message = () => {
     } catch (error) {
       console.error("Error fetching users:", error.message);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   };
 
@@ -57,7 +57,7 @@ const Message = () => {
 
     axios
       .post(
-        "https://aimps-server.vercel.app/api/messages",
+        "http://localhost:4000/api/messages",
         { sender, receiver },
         { headers }
       )
@@ -77,31 +77,33 @@ const Message = () => {
       // Ensure message is not empty and user is selected
       return;
     }
-  
+
     const newMessageObject = {
       sender: currUser.email,
       msg: newMessage,
       createdAt: Date.now(),
     };
-  
+
     setMessages((prevMessages) => [...prevMessages, newMessageObject]);
     setNewMessage("");
-  
-    const receiverEmail = users.find((user) => user._id === selectedUser)?.email;
-  
+
+    const receiverEmail = users.find(
+      (user) => user._id === selectedUser
+    )?.email;
+
     if (!receiverEmail) {
       console.error("Receiver email not found for sending message.");
       return;
     }
-  
+
     const collectedData = {
       sender: currUser.email,
       receiver: receiverEmail,
       message: [newMessageObject], // Wrap message in an array
     };
-  
+
     axios
-      .post("https://aimps-server.vercel.app/api/newmessage", collectedData, { headers })
+      .post("http://localhost:4000/api/newmessage", collectedData, { headers })
       .then((response) => {
         console.log("Message sent:", response.data);
         // Optionally update state if needed with the saved message
@@ -110,114 +112,118 @@ const Message = () => {
         console.error("Error sending message:", error.message);
       });
   };
-    
-  if(loading){
-    return <Spinner />
+
+  if (loading) {
+    return <Spinner />;
   }
 
   return (
-    <div className="chat-container">
-      <div className="user-list-container">
-        <h3>AIMPS</h3>
+      <div className="chat-container">
+        <div className="user-list-container">
+          <h3>AIMPS</h3>
 
-        {/* Toggle Buttons */}
-        <div className="btn-group">
-          <button
-            className={`toggle-btn ${showAdmin ? "act" : ""}`}
-            onClick={() => setShowAdmin(true)}
-          >
-            Admins
-          </button>
-          <button
-            className={`toggle-btn ${!showAdmin ? "act" : ""}`}
-            onClick={() => setShowAdmin(false)}
-          >
-            Users
-          </button>
-        </div>
-        <div className="user-list">
-          <ul>
-            {users
-              .filter(
-                (user) =>
-                  user.email !== currUser?.email && // Exclude the current logged-in user
-                  (showAdmin
-                    ? user.role === "admin" || user.role === "root"
-                    : user.role === "user") // Filter by role
-              )
-              .map((user) => (
-                <li key={user._id} onClick={() => handleUserClick(user._id)}>
-                  <div className="user-item">
-                    <img
-                      src={user.image}
-                      alt={user.name}
-                      className="user-avatar"
-                    />
-                    <span>{user.name}</span>
-                  </div>
-                </li>
-              ))}
-          </ul>
-        </div>
-      </div>
-
-      <div className="chat-window">
-        {selectedUser ? (
-          <div className="chat-content">
-            <div className="chat-header">
-              <img
-                src={users.find((user) => user._id === selectedUser)?.image}
-                alt=""
-              />
-              <h3>
-                {users.find((user) => user._id === selectedUser)?.name.split(' ')[0]}
-              </h3>
-            </div>
-            <div className="messages">
-              {messages.map((msg, index) => (
-                <div
-                  key={index}
-                  className={
-                    msg.sender === currUser.email ? "sent" : "received"
-                  }
-                >
-                  <p>{msg.msg}</p>
-                  <span className="message-time">
-                    {new Date(msg.createdAt).toLocaleTimeString("en-US", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hour12: true,
-                    })}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            <div className="message-input">
-              <input
-                type="text"
-                placeholder="Type a message..."
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-              />
-              <button onClick={handleSendMessage}>
-                <FaPaperPlane />
-              </button>
-            </div>
+          {/* Toggle Buttons */}
+          <div className="btn-group">
+            <button
+              className={`toggle-btn ${showAdmin ? "act" : ""}`}
+              onClick={() => setShowAdmin(true)}
+            >
+              Admins
+            </button>
+            <button
+              className={`toggle-btn ${!showAdmin ? "act" : ""}`}
+              onClick={() => setShowAdmin(false)}
+            >
+              Users
+            </button>
           </div>
-        ) : (
-          <p
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              marginTop: "35%",
-            }}
-          >
-            Select a user to start chatting
-          </p>
-        )}
+          <div className="user-list">
+            <ul>
+              {users
+                .filter(
+                  (user) =>
+                    user.email !== currUser?.email && // Exclude the current logged-in user
+                    (showAdmin
+                      ? user.role === "admin" || user.role === "root"
+                      : user.role === "user") // Filter by role
+                )
+                .map((user) => (
+                  <li key={user._id} onClick={() => handleUserClick(user._id)}>
+                    <div className="user-item">
+                      <img
+                        src={user.image}
+                        alt={user.name}
+                        className="user-avatar"
+                      />
+                      <span>{user.name}</span>
+                    </div>
+                  </li>
+                ))}
+            </ul>
+          </div>
+        </div>
+
+        <div className="chat-window">
+          {selectedUser ? (
+            <div className="chat-content">
+              <div className="chat-header">
+                <img
+                  src={users.find((user) => user._id === selectedUser)?.image}
+                  alt=""
+                />
+                <h3>
+                  {
+                    users
+                      .find((user) => user._id === selectedUser)
+                      ?.name.split(" ")[0]
+                  }
+                </h3>
+              </div>
+              <div className="messages">
+                {messages.map((msg, index) => (
+                  <div
+                    key={index}
+                    className={
+                      msg.sender === currUser.email ? "sent" : "received"
+                    }
+                  >
+                    <p>{msg.msg}</p>
+                    <span className="message-time">
+                      {new Date(msg.createdAt).toLocaleTimeString("en-US", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: true,
+                      })}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="message-input">
+                <input
+                  type="text"
+                  placeholder="Type a message..."
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                />
+                <button onClick={handleSendMessage}>
+                  <FaPaperPlane />
+                </button>
+              </div>
+            </div>
+          ) : (
+            <p
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                marginTop: "35%",
+              }}
+            >
+              Select a user to start chatting
+            </p>
+          )}
+        </div>
       </div>
-    </div>
   );
 };
 
