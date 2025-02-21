@@ -8,10 +8,9 @@ const userSchema = new mongoose.Schema({
     lowercase: true, 
     trim: true, 
     match: [
-      /^[a-zA-Z0-9._-]+@[a-z0-9.-]+\.[a-zA-Z]{2,4}$/,
+      /^[a-z0-9._-]+@[a-z0-9.-]+\.[a-z]{2,4}$/,
       "Please provide a valid email address",
     ],
-    index: true,
   },
   name: {
     type: String,
