@@ -8,7 +8,6 @@ import jwt from "jsonwebtoken";
 
 
 // ---------------------- Register API --------------------------
-
 export const register = async (req, res) => {
   try {
     const { email, name, address, password, image, phone, shopname, role } = req.body;
@@ -92,6 +91,11 @@ export const register = async (req, res) => {
       },
     });
   } catch (err) {
+    console.error("Registration Error:", err);
+
+    if (err.name === "ValidationError") {
+      return res.status(400).json({ msg: "Database validation error", details: err.errors });
+    }
 
     res.status(500).json({ msg: "Internal Server Error" });
   }
