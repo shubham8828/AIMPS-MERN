@@ -14,7 +14,9 @@ const Admins = () => {
 
   const headers = {
     Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
   };
+
 
   const navigate = useNavigate(); // Initialize useNavigate hook
 

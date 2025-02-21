@@ -22,7 +22,9 @@ const Users = () => {
       const token = localStorage.getItem("token");
       const headers = {
         Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       };
+
 
       const response = await axios.get("https://aimps-server.vercel.app/api/users", {
         headers,
