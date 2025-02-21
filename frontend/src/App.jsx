@@ -32,9 +32,13 @@ useEffect(() => {
   if (storedToken) {
     setToken(storedToken);
 
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    };
+
     axios.get("https://aimps-server.vercel.app/api/user", {
-      headers: { Authorization: `Bearer ${storedToken}` },
-    })
+      headers})
       .then((response) => {
         const { user } = response.data;
         setUserRole(user.role); // Save the actual role (e.g., "admin" or "root")
