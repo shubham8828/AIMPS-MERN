@@ -392,7 +392,7 @@ const AuthForm = ({ setToken }) => {
                     onChange={handleChange}
                     required
                     autoComplete="on"
-                    pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+                    pattern="^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
                     placeholder="Enter your email"
                   />
                 </div>
@@ -409,8 +409,6 @@ const AuthForm = ({ setToken }) => {
                     minLength={8}
                     maxLength={20}
                     autoComplete="on"
-                    // pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
-                    title="Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)."
                     placeholder="Enter a strong password"
                   />
                 </div>
