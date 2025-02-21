@@ -37,19 +37,11 @@ useEffect(() => {
       "Content-Type": "application/json",
     };
 
-    axios.get("https://aimps-server.vercel.app/api/user",
-      headers)
+    axios.get("https://aimps-server.vercel.app/api/user", {
+      headers})
       .then((response) => {
-        console.log(response)
         const { user } = response.data;
-        if(user.role==='root'){
-          setUserRole('root'); // Save the actual role (e.g., "admin" or "root")
-        }else 
-        {
-          setUserRole('admin'); // Save the actual role (e.g., "admin" or "root")
-
-        }
-        
+        setUserRole(user.role); // Save the actual role (e.g., "admin" or "root")
       })
       .catch((error) => {
         console.error("Error fetching user role:", error);
@@ -63,7 +55,7 @@ const PrivateRoute = ({ children, allowedRoles }) => {
   if (!token) {
     return <Navigate to="/" />;
   }
-  if (allowedRoles && allowedRoles.includes(userRole)) {
+  if (allowedRoles && !allowedRoles.includes(userRole)) {
     return <Navigate to="/" />;
   }
   return children;
