@@ -63,7 +63,7 @@ const AuthForm = ({ setToken }) => {
       localArea: "",
       city: "",
       state: "",
-      country: "India",
+      country: "",
       pin: "",
     },
     role: "user",
@@ -114,6 +114,7 @@ const AuthForm = ({ setToken }) => {
         ? "https://aimps-server.vercel.app/api/login"
         : "https://aimps-server.vercel.app/api/register";
 
+        
       const { data } = await axios.post(url, payload);
 
       // console.log( data.user.role)
@@ -129,7 +130,7 @@ const AuthForm = ({ setToken }) => {
         phone: "",
         password: "",
         image: defaultProfile,
-        address: { localArea: "", city: "", state: "", country: "India", pin: "" },
+        address: { localArea: "", city: "", state: "", country: "", pin: "" },
         role: "user",
       });
       navigate("/");
