@@ -51,6 +51,7 @@ const userSchema = new mongoose.Schema({
     },
     country: {
       type: String,
+      default:'India',
       required: [true, "Country is required"],
       trim: true,
     },
