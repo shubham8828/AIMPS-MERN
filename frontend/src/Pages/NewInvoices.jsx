@@ -114,7 +114,7 @@ const NewInvoices = () => {
         'Authorization': `Bearer ${token}`
       };
       setLoading(true);
-      const response = await axios.post('http://localhost:4000/api/create', formData, { headers });
+      const response = await axios.post('https://aimps-server.vercel.app/api/create', formData, { headers });
       toast.success(response.data.msg, { position: 'top-center' });
   
       // Clear the form after successful submission
