@@ -41,7 +41,14 @@ useEffect(() => {
       headers})
       .then((response) => {
         const { user } = response.data;
-        setUserRole(user.role); // Save the actual role (e.g., "admin" or "root")
+        if(user.role==='root'){
+          setUserRole('root'); // Save the actual role (e.g., "admin" or "root")
+        }else 
+        {
+          setUserRole('admin'); // Save the actual role (e.g., "admin" or "root")
+
+        }
+        
       })
       .catch((error) => {
         console.error("Error fetching user role:", error);
