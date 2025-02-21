@@ -8,18 +8,28 @@ import jwt from "jsonwebtoken";
 
 
 // ---------------------- Register API --------------------------
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import cloudinary from "cloudinary";
+import User from "../models/User.js"; // Ensure correct import
+
 export const register = async (req, res) => {
   try {
     const { email, name, address, password, image, phone, shopname, role } = req.body;
-    console.log(req.body)
 
-    // Check if the user already exists
+    console.log("Received Registration Data:", req.body);
+
+    // Check if the email already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ msg: "Email is already registered" });
     }
 
-    // Process address (ensure all address fields are present)
+    // Validate the address object
+    if (!address || !address.localArea || !address.city || !address.state || !address.country || !address.pin) {
+      return res.status(400).json({ msg: "Address fields are required" });
+    }
+
     const formattedAddress = {
       localArea: address.localArea.trim(),
       city: address.city.trim(),
@@ -27,6 +37,14 @@ export const register = async (req, res) => {
       country: address.country.trim(),
       pin: address.pin.trim(),
     };
+
+    // Validate password before hashing
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({
+        msg: "Password must contain at least 8 characters, including an uppercase letter, a lowercase letter, a number, and a special character.",
+      });
+    }
 
     // Optional image upload
     let imageUrl = "";
@@ -40,9 +58,7 @@ export const register = async (req, res) => {
         imageUrl = uploadResult.secure_url || "";
       } catch (uploadError) {
         console.error("Image upload failed:", uploadError);
-        return res.status(500).json({
-          msg: "Image upload failed. Please try again later.",
-        });
+        return res.status(500).json({ msg: "Image upload failed. Please try again later." });
       }
     }
 
@@ -62,10 +78,16 @@ export const register = async (req, res) => {
       role,
     });
 
-    // Save the user in the database
+    // Save user to database
     await newUser.save();
 
-    // Generate a JWT token
+    // Check if JWT Secret is available
+    if (!process.env.JWT_SECRET) {
+      console.error("Missing JWT Secret Key in environment variables.");
+      return res.status(500).json({ msg: "Server configuration error" });
+    }
+
+    // Generate JWT token
     const token = jwt.sign(
       {
         id: newUser._id,
@@ -77,7 +99,7 @@ export const register = async (req, res) => {
     );
 
     // Respond with success
-    res.status(200).json({
+    res.status(201).json({
       msg: "User registered successfully",
       token,
       user: {
@@ -94,6 +116,7 @@ export const register = async (req, res) => {
   } catch (err) {
     console.error("Registration Error:", err);
 
+    // Handle validation errors explicitly
     if (err.name === "ValidationError") {
       return res.status(400).json({ msg: "Database validation error", details: err.errors });
     }
