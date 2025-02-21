@@ -101,7 +101,7 @@ const Message = () => {
     };
   
     axios
-      .post("http://localhost:4000/api/newmessage", collectedData, { headers })
+      .post("https://aimps-server.vercel.app/api/newmessage", collectedData, { headers })
       .then((response) => {
         console.log("Message sent:", response.data);
         // Optionally update state if needed with the saved message
