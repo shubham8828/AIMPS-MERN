@@ -118,7 +118,7 @@ const AddAdmin = () => {
     console.log(payload);
 
     try {
-      const url = "http://localhost:4000/api/register";
+      const url = "https://aimps-server.vercel.app/api/register";
       await axios.post(url, payload);
       toast.success("Admin Added Successfully", { position: "top-center" });
       setFormData({

@@ -57,7 +57,7 @@ const Navbar = ({ children, setToken }) => {
       };
 
       const response = await axios.get(
-        "http://localhost:4000/api/user", { headers }
+        "https://aimps-server.vercel.app/api/user", { headers }
       );
       if (response.status === 404) {
         localStorage.clear();
