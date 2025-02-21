@@ -32,7 +32,7 @@ useEffect(() => {
   if (storedToken) {
     setToken(storedToken);
 
-    axios.get("http://localhost:4000/api/user", {
+    axios.get("https://aimps-server.vercel.app/api/user", {
       headers: { Authorization: `Bearer ${storedToken}` },
     })
       .then((response) => {
