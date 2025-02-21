@@ -54,7 +54,7 @@ const Invoices = () => {
 
     try {
       await axios
-        .delete(`http://localhost:4000/api/delete/${id}`, { headers })
+        .delete(`https://aimps-server.vercel.app/api/delete/${id}`, { headers })
         .then((res) => {
           toast.success(res.data.msg, { position: "top-center" });
           setAllInvoices(allInvoices.filter((invoice) => invoice._id !== id));
