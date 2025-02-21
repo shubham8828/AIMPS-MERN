@@ -254,8 +254,6 @@ const AuthForm = ({ setToken }) => {
                     minLength={8}
                     maxLength={20}
                     autoComplete="on"
-                    pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
-                    title="Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)."
                     placeholder="Enter a strong password"
                   />
                 </div>
