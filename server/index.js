@@ -8,8 +8,8 @@ import Routes from './routes/Routes.js';
 dotenv.config();
 const app = express(); 
 
-const dirname=path.dirname("")
-const buildpath =path.join(dirname,'../frontend/dist')
+// const dirname=path.dirname("")
+// const buildpath =path.join(dirname,'../frontend/dist')
 app.use(cors(
     
     // {
