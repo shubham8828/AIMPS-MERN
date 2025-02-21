@@ -5,24 +5,13 @@ import bcrypt from "bcrypt"; // To hash the password
 import cloudinary from "../cloudinary.js";
 import Payment from "../model/payment.js";
 import jwt from "jsonwebtoken";
-import { validateUser ,updateUserValidater } from "../Middleware/UserValidater.js";
-
 
 
 // ---------------------- Register API --------------------------
 
 export const register = async (req, res) => {
   try {
-    // Validate user input using Joi schema
-    const { error, value } = validateUser(req.body, { abortEarly: false });
-    if (error) {
-      return res.status(400).json({
-        msg: "Validation error",
-        details: error.details.map((e) => e.message),
-      });
-    }
-
-    const { email, name, address, password, image, phone, shopname, role } = value;
+    const { email, name, address, password, image, phone, shopname, role } = req.body;
 
     // Check if the user already exists
     const existingUser = await User.findOne({ email });
