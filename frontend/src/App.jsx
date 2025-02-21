@@ -25,7 +25,7 @@ const EditUser = React.lazy(() => import("./Pages/EditUser.jsx"));
 const App = () => {
 
 const [token, setToken] = useState(localStorage.getItem('token') || null);
-const [userRole, setUserRole] = useState(null); // Store the actual role
+const [userRole, setUserRole] = useState(""); // Store the actual role
 
 useEffect(() => {
   const storedToken = localStorage.getItem('token');
