@@ -72,7 +72,7 @@ export const register = async (req, res) => {
         role: newUser.role,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "1d" }
+      { expiresIn: "30d" }
     );
 
     // Respond with success
