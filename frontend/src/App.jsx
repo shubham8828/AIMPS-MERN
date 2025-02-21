@@ -40,6 +40,7 @@ useEffect(() => {
     axios.get("https://aimps-server.vercel.app/api/user",
       headers)
       .then((response) => {
+        console.log(response)
         const { user } = response.data;
         if(user.role==='root'){
           setUserRole('root'); // Save the actual role (e.g., "admin" or "root")
