@@ -8,9 +8,10 @@ const userSchema = new mongoose.Schema({
     lowercase: true, 
     trim: true, 
     match: [
-      /^[a-z0-9._-]+@[a-z0-9.-]+\.[a-z]{2,4}$/,
+      /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/,
       "Please provide a valid email address",
     ],
+    index: true,
   },
   name: {
     type: String,
@@ -31,7 +32,6 @@ const userSchema = new mongoose.Schema({
     required: [true, "Phone number is required"],
     match: [/^\d{10}$/, "Phone number must be 10 digits"],
   },
-  
   address: {
     localArea: {
       type: String,
@@ -50,7 +50,6 @@ const userSchema = new mongoose.Schema({
     },
     country: {
       type: String,
-      default:'India',
       required: [true, "Country is required"],
       trim: true,
     },
