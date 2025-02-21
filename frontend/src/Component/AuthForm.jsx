@@ -63,7 +63,7 @@ const AuthForm = ({ setToken }) => {
       localArea: "",
       city: "",
       state: "",
-      country: "",
+      country: "India",
       pin: "",
     },
     role: "user",
@@ -129,7 +129,7 @@ const AuthForm = ({ setToken }) => {
         phone: "",
         password: "",
         image: defaultProfile,
-        address: { localArea: "", city: "", state: "", country: "", pin: "" },
+        address: { localArea: "", city: "", state: "", country: "India", pin: "" },
         role: "user",
       });
       navigate("/");
