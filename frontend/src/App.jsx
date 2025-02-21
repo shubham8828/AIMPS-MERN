@@ -37,8 +37,8 @@ useEffect(() => {
       "Content-Type": "application/json",
     };
 
-    axios.get("https://aimps-server.vercel.app/api/user", {
-      headers})
+    axios.get("https://aimps-server.vercel.app/api/user",
+      headers)
       .then((response) => {
         const { user } = response.data;
         if(user.role==='root'){
