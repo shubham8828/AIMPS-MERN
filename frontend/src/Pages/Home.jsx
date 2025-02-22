@@ -23,7 +23,7 @@ const Home = () => {
     };
 
     axios
-      .get("http://localhost:4000/api/user", { headers })
+      .get("https://aimps-server.vercel.app/api/user", { headers })
       .then((response) => {
         const { user } = response.data;
         if (user.role === "root" || user.role === "admin") {

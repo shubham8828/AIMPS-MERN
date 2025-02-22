@@ -46,7 +46,6 @@ const statesOfIndia = [
   "Puducherry",
 ];
 
-const roles = ["user", "admin", "root"];
 
 const AddAdmin = () => {
   const [loading, setLoading] = useState(false);
@@ -118,7 +117,7 @@ const AddAdmin = () => {
     console.log(payload);
 
     try {
-      const url = "http://localhost:4000/api/register";
+      const url = "https://aimps-server.vercel.app/api/register";
       await axios.post(url, payload);
       toast.success("User Added Successfully", { position: "top-center" });
       setFormData({

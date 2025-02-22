@@ -24,7 +24,7 @@ const Users = () => {
         Authorization: `Bearer ${token}`,
       };
 
-      const response = await axios.get("http://localhost:4000/api/users", {
+      const response = await axios.get("https://aimps-server.vercel.app/api/users", {
         headers,
       });
       setUsers(response.data.users);
@@ -51,7 +51,7 @@ const Users = () => {
       const headers = {
         Authorization: `Bearer ${token}`,
       };
-      await axios.delete(`http://localhost:4000/api/deleteuser/${id}`, {
+      await axios.delete(`https://aimps-server.vercel.app/api/deleteuser/${id}`, {
         headers,
       });
 

@@ -22,7 +22,7 @@ const Search = ({ onSelectCustomer }) => {
   const handleSearch = async () => {
     try {
       const email = localStorage.getItem('email');
-      const response = await axios.post("http://localhost:4000/api/search", {
+      const response = await axios.post("https://aimps-server.vercel.app/api/search", {
         query,
         email
       });
