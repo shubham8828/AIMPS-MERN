@@ -293,7 +293,7 @@ const Charts = () => {
         const monthlyData = calculateMonthlyData(response.data.invoices);
         setData(monthlyData);
       } catch (err) {
-        setError("Failed to fetch invoice data. Please try again.");
+        setError("");
       }
     };
     fetchData();

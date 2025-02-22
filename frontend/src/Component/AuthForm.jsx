@@ -7,9 +7,6 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import "./AuthForm.css";
 
-
-
-
 const statesOfIndia = [
   "Andhra Pradesh",
   "Arunachal Pradesh",
@@ -48,7 +45,6 @@ const statesOfIndia = [
   "Lakshadweep",
   "Puducherry",
 ];
-
 
 const AuthForm = ({ setToken }) => {
   const [isLogin, setIsLogin] = useState(true); // Toggle between login and register forms
@@ -146,116 +142,125 @@ const AuthForm = ({ setToken }) => {
   };
 
   return (
-    <div className="main-container" style={{display:'flex',justifyContent:'center',alignItems:'center'}}>
-        <div className="auth-container">
-          <div className="form-toggle">
-            <button
-              className={`toggle-btn ${isLogin ? "active" : ""}`}
-              onClick={() => setIsLogin(true)}
-            >
-              Login
-            </button>
-            <button
-              className={`toggle-btn ${!isLogin ? "active" : ""}`}
-              onClick={() => setIsLogin(false)}
-            >
-              Register
-            </button>
-          </div>
+    <div
+      className="main-container"
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      <div className="auth-container">
+        <div className="form-toggle">
+          <button
+            className={`toggle-btn ${isLogin ? "active" : ""}`}
+            onClick={() => setIsLogin(true)}
+          >
+            Login
+          </button>
+          <button
+            className={`toggle-btn ${!isLogin ? "active" : ""}`}
+            onClick={() => setIsLogin(false)}
+          >
+            Register
+          </button>
+        </div>
 
-          <form className="auth-form" onSubmit={handleSubmit}>
-            {!isLogin && (
-              <>
-                <div className="form-group">
-                  <h2 style={{ textAlign: "center" }}>Profile Image</h2>
-                  <div className="profile-image">
-                    <img
-                      src={formData.image || defaultProfile}
-                      alt="Profile"
-                      className="profile-pic"
-                      onClick={triggerImageUpload}
-                    />
-                  </div>
-                  <input
-                    type="file"
-                    name="image"
-                    id="image"
-                    accept="image/*"
-                    onChange={handleChange}
-                    ref={imageRef}
-                    style={{ display: "none" }}
+        <form className="auth-form" onSubmit={handleSubmit}>
+          {!isLogin && (
+            <>
+              <div className="form-group">
+                <p style={{ textAlign: "center" }}>Profile Image</p>
+                <div className="profile-image">
+                  <img
+                    src={formData.image || defaultProfile}
+                    alt="Profile"
+                    className="profile-pic"
+                    onClick={triggerImageUpload}
                   />
                 </div>
-                <div className="form-group">
-                  <label htmlFor="name">Name</label>
-                  <input
-                    type="text"
-                    name="name"
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => {
-                      const inputValue = e.target.value.replace(
-                        /[^a-zA-Z\s]/g,
-                        ""
-                      ); // Allow only letters and spaces
-                      setFormData({ ...formData, name: inputValue });
-                    }}
-                    required
-                    minLength={3}
-                    maxLength={50}
-                    autoComplete="name"
-                    placeholder="Enter your name"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="email">Email</label>
-                  <input
-                    type="email"
-                    name="email"
-                    id="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                    autoComplete="on"
-                    placeholder="Enter your email"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="phone">Mobile No.</label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    id="phone"
-                    value={formData.phone}
-                    onChange={(e) => {
-                      const inputValue = e.target.value.replace(/[^0-9]/g, "");
-                      if (inputValue.length <= 10) {
-                        setFormData({ ...formData, phone: inputValue });
-                      }
-                    }}
-                    required
-                    pattern="[0-9]{10}"
-                    placeholder="Enter 10-digit mobile number"
-                    maxLength={10}
-                    autoComplete="on"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="password">Password</label>
-                  <input
-                    type="password"
-                    name="password"
-                    id="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                    minLength={8}
-                    maxLength={20}
-                    autoComplete="on"
-                    title="Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)."
-                    placeholder="Enter a strong password"
-                  />
-                </div>
+                <input
+                  type="file"
+                  name="image"
+                  id="image"
+                  accept="image/*"
+                  onChange={handleChange}
+                  ref={imageRef}
+                  style={{ display: "none" }}
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="name">Name</label>
+                <input
+                  type="text"
+                  name="name"
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => {
+                    const inputValue = e.target.value.replace(
+                      /[^a-zA-Z\s]/g,
+                      ""
+                    ); // Allow only letters and spaces
+                    setFormData({ ...formData, name: inputValue });
+                  }}
+                  required
+                  minLength={3}
+                  maxLength={50}
+                  autoComplete="on"
+                  placeholder="Enter your name"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="email">Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  id="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  autoComplete="email"
+                  placeholder="Enter your email"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="phone">Mobile No.</label>
+                <input
+                  type="tel"
+                  name="phone"
+                  id="phone"
+                  value={formData.phone}
+                  onChange={(e) => {
+                    const inputValue = e.target.value.replace(/[^0-9]/g, "");
+                    if (inputValue.length <= 10) {
+                      setFormData({ ...formData, phone: inputValue });
+                    }
+                  }}
+                  required
+                  pattern="[0-9]{10}"
+                  placeholder="Enter 10-digit mobile number"
+                  maxLength={10}
+                  autoComplete="tel"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="password">Password</label>
+                <input
+                  type="password"
+                  name="password"
+                  id="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  minLength={8}
+                  maxLength={20}
+                  autoComplete="current-password"
+                  placeholder="Enter a strong password"
+                />
+              </div>
+
                 <div className="form-group">
                   <label htmlFor="shopname">Shop Name</label>
                   <input
@@ -273,152 +278,157 @@ const AuthForm = ({ setToken }) => {
                     required
                     minLength={3}
                     maxLength={50}
-                    autoComplete="on"
+                    autoComplete="organization"
                   />
                 </div>
-                <div className="form-group">
-                  <label htmlFor="address.localArea">Local Area</label>
-                  <input
-                    type="text"
-                    name="address.localArea"
-                    id="localArea"
-                    value={formData.address.localArea}
-                    onChange={(e) => {
-                      const inputValue = e.target.value.replace(
-                        /[^a-zA-Z\s]/g,
-                        ""
-                      ); // Allow only letters and spaces
+
+              <div className="form-group">
+                <label htmlFor="localArea">Local Area</label>
+                <input
+                  type="text"
+                  name="address.localArea"
+                  id="localArea"
+                  value={formData.address.localArea}
+                  onChange={(e) => {
+                    const inputValue = e.target.value.replace(
+                      /[^a-zA-Z\s]/g,
+                      ""
+                    ); // Allow only letters and spaces
+                    setFormData({
+                      ...formData,
+                      address: { ...formData.address, localArea: inputValue },
+                    });
+                  }}
+                  required
+                  autoComplete="street-address"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="city">City</label>
+                <input
+                  type="text"
+                  name="address.city"
+                  id="city"
+                  value={formData.address.city}
+                  onChange={(e) => {
+                    const inputValue = e.target.value.replace(
+                      /[^a-zA-Z\s]/g,
+                      ""
+                    ); // Allow only letters and spaces
+                    setFormData({
+                      ...formData,
+                      address: { ...formData.address, city: inputValue },
+                    });
+                  }}
+                  required
+                  autoComplete="address-level2"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="address.state">State</label>
+                <select
+                  name="address.state"
+                  id="state"
+                  value={formData.address.state}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Select State</option>
+                  {statesOfIndia.map((state) => (
+                    <option key={state} value={state}>
+                      {state}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="form-group">
+                <label htmlFor="country">Country</label>
+                <select
+                  name="address.country"
+                  id="country"
+                  value={formData.address.country}
+                  onChange={handleChange}
+                  required
+                  autoComplete="country"
+                >
+                  <option>Select Country</option>
+                  <option value="India">India</option>
+                  <option value="USA">USA</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label htmlFor="pin">PIN</label>
+                <input
+                  type="text"
+                  name="address.pin"
+                  id="pin"
+                  value={formData.address.pin}
+                  required
+                  onChange={(e) => {
+                    const inputValue = e.target.value.replace(/[^0-9]/g, ""); // Allow only numbers
+                    if (inputValue.length <= 6) {
+                      // Limit input to 6 characters
                       setFormData({
                         ...formData,
-                        address: { ...formData.address, localArea: inputValue },
+                        address: {
+                          ...formData.address,
+                          pin: inputValue, // Update the pin field correctly
+                        },
                       });
-                    }}
-                    required
-                    autoComplete="on"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="address.city">City</label>
-                  <input
-                    type="text"
-                    name="address.city"
-                    id="city"
-                    value={formData.address.city}
-                    onChange={(e) => {
-                      const inputValue = e.target.value.replace(
-                        /[^a-zA-Z\s]/g,
-                        ""
-                      ); // Allow only letters and spaces
-                      setFormData({
-                        ...formData,
-                        address: { ...formData.address, city: inputValue },
-                      });
-                    }}
-                    required
-                    autoComplete="on"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="address.state">State</label>
-                  <select
-                    name="address.state"
-                    id="state"
-                    value={formData.address.state}
-                    onChange={handleChange}
-                    required
-                  >
-                    <option value="">Select State</option>
-                    {statesOfIndia.map((state) => (
-                      <option key={state} value={state}>
-                        {state}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label htmlFor="address.country">Country</label>
-                  <select
-                    name="address.country"
-                    id="country"
-                    value={formData.address.country}
-                    onChange={handleChange}
-                    required
-                  >
-                    <option value="India">India</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label htmlFor="address.pin">PIN</label>
-                  <input
-                    type="text"
-                    name="address.pin"
-                    id="pin"
-                    value={formData.address.pin}
-                    required
-                    onChange={(e) => {
-                      const inputValue = e.target.value.replace(/[^0-9]/g, ""); // Allow only numbers
-                      if (inputValue.length <= 6) {
-                        // Limit input to 6 characters
-                        setFormData({
-                          ...formData,
-                          address: {
-                            ...formData.address,
-                            pin: inputValue, // Update the pin field correctly
-                          },
-                        });
-                      }
-                    }}
-                    pattern="[0-9]{6}" // Ensure exactly 6 digits
-                    maxLength={6}
-                    autoComplete="postal-code" // Suggest browser autocomplete for postal codes
-                  />
-                </div>
-              </>
-            )}
-            {isLogin && (
-              <>
-                <div className="login-form-icon">
-                  <img src={user} alt="" />
-                </div>
+                    }
+                  }}
+                  pattern="[0-9]{6}" // Ensure exactly 6 digits
+                  maxLength={6}
+                  autoComplete="postal-code" // Suggest browser autocomplete for postal codes
+                />
+              </div>
+            </>
+          )}
+          {isLogin && (
+            <>
+              <div className="login-form-icon">
+                <img src={user} alt="" />
+              </div>
 
-                <div className="form-group">
-                  <label htmlFor="email">Email</label>
-                  <input
-                    type="email"
-                    name="email"
-                    id="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                    autoComplete="on"
-                    placeholder="Enter your email"
-                  />
-                </div>
+              <div className="form-group">
+                <label htmlFor="email">Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  id="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  autoComplete="on"
+                  placeholder="Enter your email"
+                />
+              </div>
 
-                <div className="form-group">
-                  <label htmlFor="password">Password</label>
-                  <input
-                    type="password"
-                    name="password"
-                    id="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                    minLength={8}
-                    maxLength={20}
-                    autoComplete="on"
-                    placeholder="Enter a strong password"
-                  />
-                </div>
-              </>
-            )}
+              <div className="form-group">
+                <label htmlFor="password">Password</label>
+                <input
+                  type="password"
+                  name="password"
+                  id="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  minLength={8}
+                  maxLength={20}
+                  autoComplete="on"
+                  placeholder="Enter a strong password"
+                />
+              </div>
+            </>
+          )}
 
-            <button type="submit" className="submit-btn">
-              {isLogin ? " Login" : " Register"}
-            </button>
-          </form>
-        </div>
+          <button type="submit" className="submit-btn">
+            {isLogin ? " Login" : " Register"}
+          </button>
+        </form>
       </div>
+    </div>
   );
 };
 

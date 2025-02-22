@@ -120,7 +120,7 @@ const AddAdmin = () => {
     try {
       const url = "http://localhost:4000/api/register";
       await axios.post(url, payload);
-      toast.success("Admin Added Successfully", { position: "top-center" });
+      toast.success("User Added Successfully", { position: "top-center" });
       setFormData({
         name: "",
         shopname: "",
@@ -137,7 +137,7 @@ const AddAdmin = () => {
         },
         role: "",
       });
-      navigate("/admins");
+      navigate("/");
     } catch (error) {
       toast.error(error.response?.data?.msg || "An error occurred", {
         position: "top-center",
@@ -209,7 +209,6 @@ const AddAdmin = () => {
               onChange={handleChange}
               required
               autoComplete="email"
-              pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
               placeholder="Enter your email"
             />
           </div>
@@ -246,8 +245,6 @@ const AddAdmin = () => {
               minLength={8}
               maxLength={20}
               autoComplete="current-password"
-              pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
-              title="Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)."
               placeholder="Enter a strong password"
             />
           </div>
@@ -261,11 +258,11 @@ const AddAdmin = () => {
               onChange={handleChange}
               required
             >
-              {roles.map((role) => (
-                <option key={role} value={role}>
-                  {role.charAt(0).toUpperCase() + role.slice(1)}
-                </option>
-              ))}
+              <option value="">Select Role</option>
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+              <option value="root">Root</option>
+
             </select>
           </div>
 
@@ -326,25 +323,23 @@ const AddAdmin = () => {
               autoComplete="address-level2"
             />
           </div>
-
           <div className="form-group">
-            <label htmlFor="state">State</label>
-            <select
-              name="state"
-              id="state"
-              value={formData.address.state}
-              onChange={handleChange}
-              required
-            >
-              <option value="">Select State</option>
-              {statesOfIndia.map((state) => (
-                <option key={state} value={state}>
-                  {state}
-                </option>
-              ))}
-            </select>
-          </div>
-
+                  <label htmlFor="address.state">State</label>
+                  <select
+                    name="address.state"
+                    id="state"
+                    value={formData.address.state}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">Select State</option>
+                    {statesOfIndia.map((state) => (
+                      <option key={state} value={state}>
+                        {state}
+                      </option>
+                    ))}
+                  </select>
+                </div>          
           <div className="form-group">
             <label htmlFor="country">Country</label>
             <select
@@ -355,7 +350,9 @@ const AddAdmin = () => {
               required
               autoComplete="country"
             >
+              <option>Select Country</option>
               <option value="India">India</option>
+              <option value="USA">USA</option>
             </select>
           </div>
           <div className="form-group">
