@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import "./Admins.css";
 import Spinner from "../Component/Spinner";
+import { FaCloudDownloadAlt } from "react-icons/fa";
+import * as XLSX from "xlsx";
 
 const Admins = () => {
   const [Users, setUsers] = useState([]); // Initialize with an empty array
@@ -72,6 +74,38 @@ const Admins = () => {
     console.log("Delete functionality not yet implemented.", index);
   };
 
+  
+    const downloadUserData = (users) => {
+      if (!Array.isArray(users) || users.length === 0) {
+        console.error("No users found.");
+        return;
+      }
+  
+      setLoading(true);
+  
+      const customerData = users.map((user) => ({
+        "User ID": user._id?.$oid || "N/A",
+        Name: user.name || "N/A",
+        Email: user.email || "N/A",
+        Phone: user.phone || "N/A",
+        "Local Area": user.address?.localArea || "N/A",
+        City: user.address?.city || "N/A",
+        State: user.address?.state || "N/A",
+        Country: user.address?.country || "N/A",
+        Pin: user.address?.pin || "N/A",
+        Role: user.role || "N/A",
+        "Created At": new Date(user.createdAt).toLocaleDateString() || "N/A",
+      }));
+  
+      const wb = XLSX.utils.book_new();
+      const customerSheet = XLSX.utils.json_to_sheet(customerData);
+      XLSX.utils.book_append_sheet(wb, customerSheet, "User Data");
+      XLSX.writeFile(wb, `Admin-Data.xlsx`);
+  
+      setLoading(false);
+    };
+  
+
   if (loading) {
     return <Spinner />;
   }
@@ -115,7 +149,7 @@ const Admins = () => {
                     <td style={{ textTransform: "capitalize" }}>
                       {admin.role}
                     </td>
-                    <td>
+                    <td style={{display:'flex'}}>
                       <button
                         onClick={() => handleEdit(admin)}
                         className="admin-edit-btn"
@@ -142,6 +176,13 @@ const Admins = () => {
             </tbody>
           </table>
         </div>
+<button
+        className="download-btn"
+        title="Click to download user data"
+        onClick={() => downloadUserData(Users)}
+      >
+        <FaCloudDownloadAlt />
+      </button>        
       </div>
     </div>
   );

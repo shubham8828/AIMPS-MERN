@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
   FaBars,
+  FaTimes,
   FaUserAlt,
   FaCog,
   FaFileInvoiceDollar,
@@ -9,44 +10,33 @@ import {
   FaEnvelope,
   FaMoneyCheckAlt,
   FaUsers,
-  FaComments,
 } from "react-icons/fa";
-import { RiUserAddFill,RiTeamLine ,RiAdminFill} from "react-icons/ri";
-
-import { RiLogoutBoxRLine } from "react-icons/ri";
+import { IoPersonAdd } from "react-icons/io5";
+import { MdOutlinePostAdd } from "react-icons/md";
+import { GrMultiple, GrUserAdmin } from "react-icons/gr";
+import { CgProfile } from "react-icons/cg";
+import { RiTeamLine, RiLogoutBoxRLine } from "react-icons/ri";
 import { NavLink, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import axios from "axios";
-import './NavBar.css';
+import "./NavBar.css";
+import userIcon from "../asset/user.png";
 
-const Navbar = ({ children, setToken }) => {
-  const [isOpen, setIsOpen] = useState(false);
+const Navbar = ({ setToken }) => {
   const [user, setUser] = useState(null);
-  const toggle = () => setIsOpen(!isOpen);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [invoiceDropdown, setInvoiceDropdown] = useState(false);
+  const [userDropdown, setUserDropdown] = useState(false);
+  const [profileDropdown, setProfileDropdown] = useState(false);
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
-
-  const menuItem = [
-    { path: "/", name: "Home", icon: <FaHome /> },
-    { path: "/about", name: "About", icon: <FaInfoCircle /> },
-    { path: "/contact", name: "Contact", icon: <FaEnvelope /> },
-    { path: "/invoices", name: "Invoices", icon: <FaFileInvoiceDollar /> },
-    { path: "/new-invoice", name: "New Invoice", icon: <FaFileInvoiceDollar /> },
-    { path: "/users", name: "Users", icon: <FaUsers /> },
-    { path: "/payment-details", name: "Payments", icon: <FaMoneyCheckAlt /> },
-    { path: "/admins", name: "Admins", icon: <RiAdminFill/> },
-    { path: "/adduser", name: "Add User", icon: <RiUserAddFill /> },
-    { path: "/profile", name: "Settings", icon: <FaCog /> },
-    { path: "/message", name: "Message", icon: <FaComments /> },
-    { path: "/team", name: "My Team", icon: <RiTeamLine /> },
-    { path: "/login", name: "Login", icon: <FaUserAlt /> },
-  ];
 
   const logOut = () => {
     localStorage.clear();
     toast.success("Logout successful", { position: "top-center" });
     navigate("/");
     setToken(null);
+    setUser(null);
   };
 
   const fetchUserData = async () => {
@@ -55,15 +45,13 @@ const Navbar = ({ children, setToken }) => {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       };
-
-      const response = await axios.get(
-        "https://aimps-server.vercel.app/api/user", { headers }
-      );
+      const response = await axios.get("https://aimps-server.vercel.app/api/user", {
+        headers,
+      });
       if (response.status === 404) {
         localStorage.clear();
-        navigate('/login');
+        navigate("/login");
       }
-
       setUser(response.data.user);
     } catch (error) {
       console.error("Error fetching user data:", error.response?.data || error.message);
@@ -76,55 +64,120 @@ const Navbar = ({ children, setToken }) => {
     }
   }, [token]);
 
-  const filteredMenu = menuItem.filter(item => {
-    if (!token) {
-      return !["/dashboard", "/invoices", "/new-invoice", "/profile", "/message", "/payment-details", "/users", "/admins","/adduser"].includes(item.path);
-    }
-    if (user?.role === "root") {
-      return !["/contact", "/login", "/new-invoice"].includes(item.path);
-    }
-    if (user?.role === "admin") {
-      return !["/contact", "/login", "/new-invoice","/adduser"].includes(item.path);
-    }
-    if (user?.role === "user") {
-      return !["/users", "/admins", "/login", "/contact","/adduser"].includes(item.path);
-    }
-    return item.path !== "/login";
-  });
-
   return (
-    <div className="navbar">
-      <div style={{ width: isOpen ? "200px" : "50px" }} className="sidebar">
-        <div className="top_section">
-          <div style={{ marginLeft: isOpen ? "0px" : "0px" }} className="bars">
-            <FaBars onClick={toggle} />
-          </div>
+    <div className="navbar-container">
+      <nav className="navbar">
+        <h1>AIMPS</h1>
+
+        {/* Hamburger Icon */}
+        <div className="hamburger" onClick={() => setMenuOpen(!menuOpen)}>
+          {menuOpen ? <FaTimes size={28} color="white" /> : <FaBars size={28} color="white" />}
         </div>
-        {isOpen && token && (
-          <div className="userContainer">
-            <img src={user&&user.image} alt="User" />
-            <span>{user&&user.role}</span>
-            <p>{user&&user.name}</p>
-          </div>
-        )}
-        {filteredMenu.map((item, index) => (
-          <NavLink to={item.path} key={index} className="link" activeclassname="active">
-            <div className="icon">{item.icon}</div>
-            <div style={{ display: isOpen ? "block" : "none" }} className="link_text">{item.name}</div>
+
+        {/* Menu Items */}
+        <div className={`menuItems ${menuOpen ? "open" : ""}`}>
+          <NavLink to="/" className="nav-link" onClick={() => setMenuOpen(false)}>
+            <FaHome /> Home
           </NavLink>
-        ))}
-        {token && (
-          <div className="logout-main">
-            <div className="logout-icon" onClick={logOut}><RiLogoutBoxRLine /></div>
-            <div style={{ display: isOpen ? "block" : "none" }}>
-              <button onClick={logOut} className="logout">Logout</button>
-            </div>
-          </div>
-        )}
-      </div>
-      <main style={{ width: isOpen ? "calc(100% - 150px)" : "calc(100% - 50px)", transition: "width 1s ease-in-out" }}>
-        {children}
-      </main>
+          <NavLink to="/about" className="nav-link" onClick={() => setMenuOpen(false)}>
+            <FaInfoCircle /> About
+          </NavLink>
+          <NavLink to="/contact" className="nav-link" onClick={() => setMenuOpen(false)}>
+            <FaEnvelope /> Contact
+          </NavLink>
+          {!user && (
+            <NavLink to="/team" className="nav-link" onClick={() => setMenuOpen(false)}>
+              <RiTeamLine /> Developer
+            </NavLink>
+          )}
+          {!user && (
+            <NavLink to="/login" className="nav-link" onClick={() => setMenuOpen(false)}>
+              <FaUserAlt /> Login
+            </NavLink>
+          )}
+
+          {user && (
+            <>
+              {/* Invoice Dropdown */}
+              <div
+                className="dropdown"
+                onClick={() => setInvoiceDropdown(!invoiceDropdown)}
+              >
+                <button className="dropdown-btn">
+                  <FaFileInvoiceDollar /> Invoice
+                </button>
+                {invoiceDropdown && (
+                  <div className="dropdown-content">
+                    <NavLink to="/invoices" onClick={() => setMenuOpen(false)}>
+                      <GrMultiple /> Invoices
+                    </NavLink>
+                    <NavLink to="/new-invoice" onClick={() => setMenuOpen(false)}>
+                      <MdOutlinePostAdd /> New Invoice
+                    </NavLink>
+                    <NavLink to="/payment-details" onClick={() => setMenuOpen(false)}>
+                      <FaMoneyCheckAlt /> Payments
+                    </NavLink>
+                  </div>
+                )}
+              </div>
+
+              {/* User Dropdown */}
+              {user && (user.role === "admin" || user.role === "root") && (
+                <div
+                  className="dropdown"
+                  onClick={() => setUserDropdown(!userDropdown)}
+                >
+                  <button className="dropdown-btn">
+                    <FaUsers /> User
+                  </button>
+                  {userDropdown && (
+                    <div className="dropdown-content">
+                      <NavLink to="/users" onClick={() => setMenuOpen(false)}>
+                        <FaUsers /> Users
+                      </NavLink>
+                      {user.role === "root" && (
+                        <NavLink to="/admins" onClick={() => setMenuOpen(false)}>
+                          <GrUserAdmin /> Admins
+                        </NavLink>
+                      )}
+                      <NavLink to="/adduser" onClick={() => setMenuOpen(false)}>
+                        <IoPersonAdd /> Add User
+                      </NavLink>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <NavLink to="/team" className="nav-link" onClick={() => setMenuOpen(false)}>
+                <RiTeamLine /> Developer
+              </NavLink>
+
+              {/* Profile Dropdown */}
+              <div
+                className="dropdown"
+                onClick={() => setProfileDropdown(!profileDropdown)}
+              >
+                <button className="dropdown-btn">
+                  <img src={user.image || userIcon} alt="User" />
+                </button>
+                {profileDropdown && (
+                  <div className="dropdown-content">
+                    <NavLink to="/profile" onClick={() => setMenuOpen(false)}>
+                      <CgProfile /> Profile
+                    </NavLink>
+                    <NavLink to="/setting" onClick={() => setMenuOpen(false)}>
+                      <FaCog /> Setting
+                    </NavLink>
+                    <button onClick={logOut} className="logout-button">
+                      <RiLogoutBoxRLine /> Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      </nav>
     </div>
   );
 };
