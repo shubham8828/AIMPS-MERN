@@ -10,7 +10,7 @@ const app = express();
 app.use(cors(
     
     {
-        origin: ["https://aimps.vercel.app"],
+        origin: ["https://aimps.vercel.app","http://localhost:5173/"],
         methods: ["POST", "GET","PUT","DELETE"],
         credentials: true
     }
