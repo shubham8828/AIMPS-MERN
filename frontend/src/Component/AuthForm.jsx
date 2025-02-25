@@ -6,7 +6,7 @@ import ImageCompressor from "image-compressor.js"; // For image compression
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import "./AuthForm.css";
-import Sppiner from './Spinner.jsx'
+import Sppiner from './Spinner';
 const statesOfIndia = [
   "Andhra Pradesh",
   "Arunachal Pradesh",
