@@ -6,7 +6,7 @@ import ImageCompressor from "image-compressor.js"; // For image compression
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import "./AuthForm.css";
-
+import Sppiner from './Spinner.jsx'
 const statesOfIndia = [
   "Andhra Pradesh",
   "Arunachal Pradesh",
@@ -45,7 +45,7 @@ const statesOfIndia = [
   "Lakshadweep",
   "Puducherry",
 ];
-
+const [loading,Setloading]=useState(false);
 const AuthForm = ({ setToken }) => {
   const [isLogin, setIsLogin] = useState(true); // Toggle between login and register forms
   const [formData, setFormData] = useState({
@@ -100,6 +100,7 @@ const AuthForm = ({ setToken }) => {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+    Setloading(true);
 
     try {
       const payload = isLogin
@@ -134,12 +135,17 @@ const AuthForm = ({ setToken }) => {
         position: "top-center",
       });
     } finally {
+      Setloading(false)
+
     }
   };
 
   const triggerImageUpload = () => {
     imageRef.current.click(); // Trigger image file input click
   };
+  if(loading){
+    return <Sppiner/>
+  }
 
   return (
     <div
