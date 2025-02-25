@@ -45,9 +45,9 @@ const statesOfIndia = [
   "Lakshadweep",
   "Puducherry",
 ];
-const [loading,setLoading]=useState(false);
 const AuthForm = ({ setToken }) => {
   const [isLogin, setIsLogin] = useState(true); // Toggle between login and register forms
+  const [loading,setLoading]=useState(false);
   const [formData, setFormData] = useState({
     name: "",
     shopname: "",
@@ -129,12 +129,13 @@ const AuthForm = ({ setToken }) => {
         address: { localArea: "", city: "", state: "", country: "", pin: "" },
         role: "user",
       });
+      setLoading(false)
+
       navigate("/");
     } catch (error) {
       toast.error(error.response?.data?.msg || "An error occurred", {
         position: "top-center",
       });
-    } finally {
       setLoading(false)
 
     }
