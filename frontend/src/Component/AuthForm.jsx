@@ -129,8 +129,6 @@ const AuthForm = ({ setToken }) => {
         address: { localArea: "", city: "", state: "", country: "", pin: "" },
         role: "user",
       });
-      setLoading(false)
-
       navigate("/");
     } catch (error) {
       toast.error(error.response?.data?.msg || "An error occurred", {
