@@ -45,7 +45,7 @@ const statesOfIndia = [
   "Lakshadweep",
   "Puducherry",
 ];
-const [loading,Setloading]=useState(false);
+const [loading,setLoading]=useState(false);
 const AuthForm = ({ setToken }) => {
   const [isLogin, setIsLogin] = useState(true); // Toggle between login and register forms
   const [formData, setFormData] = useState({
@@ -100,7 +100,7 @@ const AuthForm = ({ setToken }) => {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    Setloading(true);
+    setLoading(true);
 
     try {
       const payload = isLogin
@@ -135,7 +135,7 @@ const AuthForm = ({ setToken }) => {
         position: "top-center",
       });
     } finally {
-      Setloading(false)
+      setLoading(false)
 
     }
   };
