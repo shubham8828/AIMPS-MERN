@@ -139,7 +139,7 @@ export const login = async (req, res) => {
     };
 
     const token = jwt.sign(payload, process.env.JWT_SECRET, {
-      expiresIn: "1d", // Set the expiration time
+      expiresIn: "30d", // Set the expiration time
     });
 
     // Return a success response with the token and user data
