@@ -136,8 +136,10 @@ const AuthForm = ({ setToken }) => {
       toast.error(error.response?.data?.msg || "An error occurred", {
         position: "top-center",
       });
-      setLoading(false)
 
+    }
+    finally{
+      setLoading(false);
     }
   };
 
