@@ -5,6 +5,9 @@
   width: 100%;
   padding: 0px 2%;
   display: flex;
+  position: absolute;
+  top: 0;
+  left: 0;
   flex-direction: column;
   justify-content: center;
   align-items: center;

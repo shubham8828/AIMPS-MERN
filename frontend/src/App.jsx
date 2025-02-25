@@ -89,6 +89,7 @@ const App = () => {
         <Route path="/message" element={<PrivateRoute><Message /></PrivateRoute>} />
       </Routes>
       <Footer />
+
     </BrowserRouter>
   );
 };
