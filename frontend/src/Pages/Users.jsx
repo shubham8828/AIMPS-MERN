@@ -81,7 +81,7 @@ const Users = () => {
     setLoading(true);
 
     const customerData = users.map((user) => ({
-      "User ID": user._id?.$oid || "N/A",
+      "User ID": user._id|| "N/A",
       Name: user.name || "N/A",
       Email: user.email || "N/A",
       Phone: user.phone || "N/A",
