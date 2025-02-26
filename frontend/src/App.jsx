@@ -183,14 +183,14 @@ const App = () => {
               </PrivateRoute>
             }
           />
-          <Route
-            path="/message"
-            element={
-              <PrivateRoute>
-                <Message />
-              </PrivateRoute>
-            }
-          />
+          <Route 
+          path="/message" 
+          element={
+            <PrivateRoute>
+              <Message />
+            </PrivateRoute>
+          } 
+        />
         </Routes>
         </div>
         <Footer />

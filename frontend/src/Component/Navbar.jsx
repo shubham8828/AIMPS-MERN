@@ -100,13 +100,25 @@ const Navbar = ({ setToken }) => {
           >
             <FaInfoCircle /> About
           </NavLink>
-          <NavLink
-            to={!user ? "/contact" : "/message"}
-            className="nav-link"
-            onClick={() => setMenuOpen(false)}
-          >
-            <FaEnvelope /> Contact
-          </NavLink>
+          {!user && (
+            <NavLink
+              to="/contact"
+              className="nav-link"
+              onClick={() => setMenuOpen(false)}
+            >
+              <FaEnvelope /> Contact
+            </NavLink>
+          )}
+
+          {user && (
+            <NavLink
+              to="/message"
+              className="nav-link"
+              onClick={() => setMenuOpen(false)}
+            >
+              <FaEnvelope /> Contact
+            </NavLink>
+          )}
 
           {!user && (
             <NavLink
