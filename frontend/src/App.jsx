@@ -81,7 +81,7 @@ const App = () => {
         <Routes>
           <Route path="/" element={token ? <Home /> : <LandingPage />} />
           <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
+          <Route path="/contact" element={<Contact/>} />
           <Route path="/team" element={<Team />} />
           <Route path="/login" element={<AuthForm setToken={setToken} />} />
           <Route path="/register" element={<AuthForm setToken={setToken} />} />

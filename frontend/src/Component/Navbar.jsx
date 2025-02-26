@@ -45,16 +45,22 @@ const Navbar = ({ setToken }) => {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       };
-      const response = await axios.get("https://aimps-server.vercel.app/api/user", {
-        headers,
-      });
+      const response = await axios.get(
+        "https://aimps-server.vercel.app/api/user",
+        {
+          headers,
+        }
+      );
       if (response.status === 404) {
         localStorage.clear();
         navigate("/login");
       }
       setUser(response.data.user);
     } catch (error) {
-      console.error("Error fetching user data:", error.response?.data || error.message);
+      console.error(
+        "Error fetching user data:",
+        error.response?.data || error.message
+      );
     }
   };
 
@@ -71,27 +77,52 @@ const Navbar = ({ setToken }) => {
 
         {/* Hamburger Icon */}
         <div className="hamburger" onClick={() => setMenuOpen(!menuOpen)}>
-          {menuOpen ? <FaTimes size={28} color="white" /> : <FaBars size={28} color="white" />}
+          {menuOpen ? (
+            <FaTimes size={28} color="white" />
+          ) : (
+            <FaBars size={28} color="white" />
+          )}
         </div>
 
         {/* Menu Items */}
         <div className={`menuItems ${menuOpen ? "open" : ""}`}>
-          <NavLink to="/" className="nav-link" onClick={() => setMenuOpen(false)}>
+          <NavLink
+            to="/"
+            className="nav-link"
+            onClick={() => setMenuOpen(false)}
+          >
             <FaHome /> Home
           </NavLink>
-          <NavLink to="/about" className="nav-link" onClick={() => setMenuOpen(false)}>
+          <NavLink
+            to="/about"
+            className="nav-link"
+            onClick={() => setMenuOpen(false)}
+          >
             <FaInfoCircle /> About
           </NavLink>
-          <NavLink to="/contact" className="nav-link" onClick={() => setMenuOpen(false)}>
+          <NavLink
+            to={!user ? "/contact" : "/message"}
+            className="nav-link"
+            onClick={() => setMenuOpen(false)}
+          >
             <FaEnvelope /> Contact
           </NavLink>
+
           {!user && (
-            <NavLink to="/team" className="nav-link" onClick={() => setMenuOpen(false)}>
+            <NavLink
+              to="/team"
+              className="nav-link"
+              onClick={() => setMenuOpen(false)}
+            >
               <RiTeamLine /> Developer
             </NavLink>
           )}
           {!user && (
-            <NavLink to="/login" className="nav-link" onClick={() => setMenuOpen(false)}>
+            <NavLink
+              to="/login"
+              className="nav-link"
+              onClick={() => setMenuOpen(false)}
+            >
               <FaUserAlt /> Login
             </NavLink>
           )}
@@ -111,10 +142,16 @@ const Navbar = ({ setToken }) => {
                     <NavLink to="/invoices" onClick={() => setMenuOpen(false)}>
                       <GrMultiple /> Invoices
                     </NavLink>
-                    <NavLink to="/new-invoice" onClick={() => setMenuOpen(false)}>
+                    <NavLink
+                      to="/new-invoice"
+                      onClick={() => setMenuOpen(false)}
+                    >
                       <MdOutlinePostAdd /> New Invoice
                     </NavLink>
-                    <NavLink to="/payment-details" onClick={() => setMenuOpen(false)}>
+                    <NavLink
+                      to="/payment-details"
+                      onClick={() => setMenuOpen(false)}
+                    >
                       <FaMoneyCheckAlt /> Payments
                     </NavLink>
                   </div>
@@ -136,7 +173,10 @@ const Navbar = ({ setToken }) => {
                         <FaUsers /> Users
                       </NavLink>
                       {user.role === "root" && (
-                        <NavLink to="/admins" onClick={() => setMenuOpen(false)}>
+                        <NavLink
+                          to="/admins"
+                          onClick={() => setMenuOpen(false)}
+                        >
                           <GrUserAdmin /> Admins
                         </NavLink>
                       )}
@@ -148,7 +188,11 @@ const Navbar = ({ setToken }) => {
                 </div>
               )}
 
-              <NavLink to="/team" className="nav-link" onClick={() => setMenuOpen(false)}>
+              <NavLink
+                to="/team"
+                className="nav-link"
+                onClick={() => setMenuOpen(false)}
+              >
                 <RiTeamLine /> Developer
               </NavLink>
 
