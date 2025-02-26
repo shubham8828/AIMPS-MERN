@@ -23,7 +23,7 @@ import "./NavBar.css";
 import userIcon from "../asset/user.png";
 
 const Navbar = ({ setToken }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
   const [invoiceDropdown, setInvoiceDropdown] = useState(false);
   const [userDropdown, setUserDropdown] = useState(false);
@@ -169,6 +169,15 @@ const Navbar = ({ setToken }) => {
                   </div>
                 )}
               </div>
+
+              <NavLink
+              to="/message"
+              className="nav-link"
+              onClick={() => setMenuOpen(false)}
+            >
+              <FaUserAlt /> Message
+            </NavLink>
+
 
               {/* User Dropdown */}
               {user && (user.role === "admin" || user.role === "root") && (
