@@ -23,7 +23,7 @@ import "./NavBar.css";
 import userIcon from "../asset/user.png";
 
 const Navbar = ({ setToken }) => {
-  const [user, setUser] = useState('');
+  const [user, setUser] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [invoiceDropdown, setInvoiceDropdown] = useState(false);
   const [userDropdown, setUserDropdown] = useState(false);
