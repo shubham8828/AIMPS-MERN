@@ -434,7 +434,7 @@ const AddAdmin = () => {
 
           <div className="form-group center-text">
             <button type="submit" className="modern-btn">
-              Add User
+              Send OTP
             </button>
           </div>
         </form>
