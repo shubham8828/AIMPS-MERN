@@ -1,8 +1,25 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { FaEnvelope, FaUserAlt, FaPhone, FaMapMarkerAlt } from "react-icons/fa";
 import "./Contact.css";
 
 const Contact = () => {
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handlePopState = () => {
+      // When a popstate event occurs, redirect to /home
+      navigate("/", { replace: true });
+    };
+
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [navigate]);
+
   return (
     <div className="main-container">
       <div className="contact-container">
@@ -31,11 +48,7 @@ const Contact = () => {
           <FaUserAlt className="contact-icon" />{" "}
           <a href="/login" className="contact-link">
             Login
-          </a>{" "}
-          or{" "}
-          <a href="/register" className="contact-link">
-            Register
-          </a>
+          </a>          
           . Once logged in, you can explore all our features and services.
         </p>
         <p className="contact-text">

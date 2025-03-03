@@ -8,7 +8,7 @@ import {
   updateInvoice,
   getUser,
   login,
-  register,
+  AddUser,
   update,
   makePayment,
   newMessages,
@@ -17,24 +17,31 @@ import {
   getMessages,
   getUsers,
   deleteUser,
-  
-
+  sendOtp,
+  verifyOtp,
+  resetPassword,
+ 
 } from '../controller/Controller.js';
+
 
 const Routes = express.Router();
 
 Routes.post('/login', login);
-Routes.post('/register', register);
+Routes.post('/send-otp',sendOtp)
+Routes.post('/verify-otp',verifyOtp)
+
+Routes.post('/reset-password',resetPassword)
 
 
 Routes.use(AuthenticateToken);
-
 Routes.get('/user', getUser);
+Routes.post('/user/add', AddUser);
+
 Routes.delete('/deleteuser/:id', deleteUser);
 Routes.post('/create', newInvoive);
 Routes.get('/invoices', invoices);
 Routes.delete('/delete/:id', deleteInvoice);
-Routes.post('/search', searchCustomer); // for searching customers
+Routes.get('/search', searchCustomer); // for searching customers
 Routes.put('/update', update); // update user profile
 Routes.put('/updateInvoice', updateInvoice); // updating invoice
 Routes.post('/payment', makePayment);

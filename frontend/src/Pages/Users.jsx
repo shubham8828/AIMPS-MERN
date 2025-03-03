@@ -2,13 +2,17 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { FaEdit, FaTrashAlt, FaCloudDownloadAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import "./Users.css"; // External CSS
+import "./Users.css"; 
 import Spinner from "../Component/Spinner";
 import * as XLSX from "xlsx";
 
 const Users = () => {
   const [users, setUsers] = useState([]);
+  const [currUser, setCurrUser] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedRole, setSelectedRole] = useState("");
+  const [selectedCreator, setSelectedCreator] = useState("");
+  const [creators, setCreators] = useState([]); // List of unique creators (e.g., emails)
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
@@ -21,33 +25,41 @@ const Users = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
+      if (!token) throw new Error("No authentication token found");
+  
       const headers = { Authorization: `Bearer ${token}` };
-
-      const response = await axios.get("https://aimps-server.vercel.app/api/users", {
-        headers,
-      });
-      setUsers(response.data.users);
+      const response = await axios.get("https://aimps-server.vercel.app/api/users", { headers });
+  
+      const userList = response.data.users || [];
+      setUsers(userList);
+      setCurrUser(response.data.user);
+  
+      // Extract unique creators (only for users created by admins or root)
+      const uniqueCreators = [
+        ...new Set(
+          userList
+            .map(user => user.createdBy)
+        ),
+      ];
+  
+      setCreators(uniqueCreators);
     } catch (error) {
       console.error("Error fetching users:", error);
     } finally {
       setLoading(false);
     }
   };
-
-  const handleEdit = (user) => {
-    navigate("/user/edit", { state: user });
-  };
-
+  
   const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this user?")) return;
+
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      if (!token) throw new Error("No token found");
+      if (!token) throw new Error("No authentication token found");
 
       const headers = { Authorization: `Bearer ${token}` };
-      await axios.delete(`https://aimps-server.vercel.app/api/deleteuser/${id}`, {
-        headers,
-      });
+      await axios.delete(`https://aimps-server.vercel.app/api/deleteuser/${id}`, { headers });
 
       setUsers((prevUsers) => prevUsers.filter((user) => user._id !== id));
     } catch (error) {
@@ -56,32 +68,43 @@ const Users = () => {
       setLoading(false);
     }
   };
-
   const filteredUsers = users.filter((user) => {
+    // Exclude the current logged-in user
+    if (user.email === currUser?.email) return false;
+  
+    // If the current user is an admin, only show users created by them
+    if (currUser?.role === "admin" && user.createdBy !== currUser.email) {
+      return false;
+    }
+  
+    // For everyone else, apply the standard filtering
     const query = searchQuery.toLowerCase().trim();
     return (
-      user.role === "user" &&
-      (user.name?.toLowerCase().includes(query) ||
+      (selectedRole === "" || user.role?.toLowerCase() === selectedRole.toLowerCase()) &&
+      (selectedCreator === "" || user.createdBy === selectedCreator) &&
+      (
+        user.name?.toLowerCase().includes(query) ||
         user.email?.toLowerCase().includes(query) ||
+        user.role?.toLowerCase().includes(query) ||
         user.address?.city?.toLowerCase().includes(query) ||
         user.address?.state?.toLowerCase().includes(query) ||
         user.address?.country?.toLowerCase().includes(query) ||
         user.address?.localArea?.toLowerCase().includes(query) ||
         user.address?.pin?.toString().includes(query) ||
-        (users.indexOf(user) + 1).toString().includes(query))
+        user.createdBy?.toLowerCase().includes(query)
+      )
     );
   });
 
-  const downloadUserData = (users) => {
-    if (!Array.isArray(users) || users.length === 0) {
-      console.error("No users found.");
+  // Download user data as Excel (.xlsx)
+  const downloadUserData = () => {
+    if (users.length === 0) {
+      console.error("No users available to download.");
       return;
     }
 
-    setLoading(true);
-
-    const customerData = users.map((user) => ({
-      "User ID": user._id|| "N/A",
+    const userData = users.map((user) => ({
+      "User ID": user._id || "N/A",
       Name: user.name || "N/A",
       Email: user.email || "N/A",
       Phone: user.phone || "N/A",
@@ -91,20 +114,19 @@ const Users = () => {
       Country: user.address?.country || "N/A",
       Pin: user.address?.pin || "N/A",
       Role: user.role || "N/A",
-      "Created At": new Date(user.createdAt).toLocaleDateString() || "N/A",
+      "Created By": user.createdBy || "N/A",
+      "Created At": user.createdAt
+        ? new Date(user.createdAt).toLocaleDateString()
+        : "N/A",
     }));
 
     const wb = XLSX.utils.book_new();
-    const customerSheet = XLSX.utils.json_to_sheet(customerData);
-    XLSX.utils.book_append_sheet(wb, customerSheet, "User Data");
-    XLSX.writeFile(wb, `User-Data.xlsx`);
-
-    setLoading(false);
+    const worksheet = XLSX.utils.json_to_sheet(userData);
+    XLSX.utils.book_append_sheet(wb, worksheet, "User Data");
+    XLSX.writeFile(wb, "User-Data.xlsx");
   };
 
-  if (loading) {
-    return <Spinner />;
-  }
+  if (loading) return <Spinner />;
 
   return (
     <div className="main-container">
@@ -115,11 +137,37 @@ const Users = () => {
             type="text"
             placeholder="Search by Name, Email, City, State, etc."
             value={searchQuery}
-            id="search"
             onChange={(e) => setSearchQuery(e.target.value)}
             className="users-search-bar"
           />
+          {currUser?.role === "root" && (
+            <>
+              <select
+                className="users-filter"
+                value={selectedRole}
+                onChange={(e) => setSelectedRole(e.target.value)}
+              >
+                <option value="">All Users</option>
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
+              </select>
+              {/* Dynamic Created By Filter Dropdown */}
+              <select
+                className="users-filter"
+                value={selectedCreator}
+                onChange={(e) => setSelectedCreator(e.target.value)}
+              >
+                <option value="">All Creators</option>
+                {creators.map((creator, index) => (
+                  <option key={index} value={creator}>
+                    {creator}
+                  </option>
+                ))}
+              </select>
+            </>
+          )}
         </div>
+
         {filteredUsers.length === 0 ? (
           <div className="no-users">No users available</div>
         ) : (
@@ -130,11 +178,14 @@ const Users = () => {
                   <th>Sr No.</th>
                   <th>Name</th>
                   <th>Email</th>
+                  <th>Phone</th>
+                  <th>Role</th>
                   <th>City</th>
                   <th>State</th>
                   <th>Country</th>
                   <th>Local Area</th>
                   <th>Pin Code</th>
+                  {currUser?.role === "root" && <th>Created By</th>}
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -142,32 +193,21 @@ const Users = () => {
                 {filteredUsers.map((user, index) => (
                   <tr key={user._id}>
                     <td>{index + 1}</td>
-                    <td style={{ textTransform: "capitalize" }}>{user.name}</td>
-                    <td style={{ textTransform: "lowercase" }}>{user.email}</td>
-                    <td style={{ textTransform: "capitalize" }}>
-                      {user.address?.city || "N/A"}
-                    </td>
-                    <td style={{ textTransform: "capitalize" }}>
-                      {user.address?.state || "N/A"}
-                    </td>
-                    <td style={{ textTransform: "capitalize" }}>
-                      {user.address?.country || "N/A"}
-                    </td>
-                    <td style={{ textTransform: "capitalize" }}>
-                      {user.address?.localArea || "N/A"}
-                    </td>
+                    <td>{user.name}</td>
+                    <td>{user.email}</td>
+                    <td>{user.phone}</td>
+                    <td>{user.role}</td>
+                    <td>{user.address?.city || "N/A"}</td>
+                    <td>{user.address?.state || "N/A"}</td>
+                    <td>{user.address?.country || "N/A"}</td>
+                    <td>{user.address?.localArea || "N/A"}</td>
                     <td>{user.address?.pin || "N/A"}</td>
-                    <td style={{ display: "flex" }}>
-                      <button
-                        className="users-edit-btn"
-                        onClick={() => handleEdit(user)}
-                      >
+                    {currUser?.role === "root" && <td>{user.createdBy}</td>}
+                    <td style={{display:'flex', flexDirection:'row'}}>
+                      <button className="users-edit-btn" onClick={() => navigate("/user/edit", { state: user })}>
                         <FaEdit />
                       </button>
-                      <button
-                        className="users-delete-btn"
-                        onClick={() => handleDelete(user._id)}
-                      >
+                      <button className="users-delete-btn" onClick={() => handleDelete(user._id)}>
                         <FaTrashAlt />
                       </button>
                     </td>
@@ -177,14 +217,10 @@ const Users = () => {
             </table>
           </div>
         )}
+        <button className="download-btn" title="Download user data" onClick={downloadUserData}>
+          <FaCloudDownloadAlt /> 
+        </button>
       </div>
-      <button
-        className="download-btn"
-        title="Click to download user data"
-        onClick={() => downloadUserData(users)}
-      >
-        <FaCloudDownloadAlt />
-      </button>
     </div>
   );
 };

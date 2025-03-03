@@ -23,26 +23,37 @@ const PaymentList = () => {
   const headers = {
     Authorization: `Bearer ${token}`,
   };
+  const fetchPaymentData = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(
+        "https://aimps-server.vercel.app/api/payment-data",{ headers }
+      );
+      const fetchedData = response.data.data || [];
+      setPaymentData(fetchedData); // Set full payment data
+      setFilteredData(fetchedData); // Initially set filtered data to full data
+    } catch (error) {
+      console.error("Error fetching payment data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchPaymentData = async () => {
-      setLoading(true);
-      try {
-        const response = await axios.get(
-          "https://aimps-server.vercel.app/api/payment-data",{ headers }
-        );
-        const fetchedData = response.data.data || [];
-        setPaymentData(fetchedData); // Set full payment data
-        setFilteredData(fetchedData); // Initially set filtered data to full data
-      } catch (error) {
-        console.error("Error fetching payment data:", error);
-      } finally {
-        setLoading(false);
-      }
+    fetchPaymentData();
+
+    const handlePopState = () => {
+      // When a popstate event occurs, redirect to /home
+      navigate("/", { replace: true });
     };
 
-    fetchPaymentData();
-  }, []);
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+
+  }, [navigate]);
 
   // Search functionality: Update filtered data
   useEffect(() => {

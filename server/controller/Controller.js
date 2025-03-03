@@ -5,16 +5,29 @@ import bcrypt from "bcrypt"; // To hash the password
 import cloudinary from "../cloudinary.js";
 import Payment from "../model/payment.js";
 import jwt from "jsonwebtoken";
+import nodemailer from 'nodemailer';
+import dotenv from 'dotenv';
 
+dotenv.config();
+
+const otpStorage = {};
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER, // your Gmail address (set in .env)
+    pass: process.env.EMAIL_PASS, // your app-specific password (set in .env)
+  },
+});
 
 
 // ---------------------- Register API --------------------------
-
-export const register = async (req, res) => {
+export const AddUser = async (req, res) => {
   try {
-    // Validate user input using Joi schema
- 
-    const { email, name, address, password, image, phone, shopname, role } = req.body;
+
+    const { email, name, address, password, image, phone, shopname} = req.body;
+    const user=req.user;
+    const createdBy = user.email;
+    const role=user.role==='root'?'admin':'user';
 
     // Check if the user already exists
     const existingUser = await User.findOne({ email });
@@ -22,7 +35,6 @@ export const register = async (req, res) => {
       return res.status(400).json({ msg: "Email is already registered" });
     }
 
-    // Process address (ensure all address fields are present)
     const formattedAddress = {
       localArea: address.localArea.trim(),
       city: address.city.trim(),
@@ -47,64 +59,32 @@ export const register = async (req, res) => {
           msg: "Image upload failed. Please try again later.",
         });
       }
+    } else {
+      return res.status(404).json({ msg: "Image not found" });
     }
 
-    // Hash the password securely
+    // Hash password before saving
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create a new user instance
     const newUser = new User({
       email,
       name,
       phone,
       address: formattedAddress,
-      shopname,
+      shopname: shopname || "AIMPS",
       password: hashedPassword,
       image: imageUrl,
+      createdBy,
       role,
     });
 
-    // Save the user in the database
     await newUser.save();
-
-    // Generate a JWT token
-    const token = jwt.sign(
-      {
-        id: newUser._id,
-        email: newUser.email,
-        role: newUser.role,
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: "30d" }
-    );
-
-    // Respond with success
-    res.status(200).json({
-      msg: "User registered successfully",
-      token,
-      user: {
-        id: newUser._id,
-        email: newUser.email,
-        name: newUser.name,
-        phone: newUser.phone,
-        shopname: newUser.shopname,
-        role: newUser.role,
-        address: newUser.address,
-        image: newUser.image,
-      },
-    });
+    res.status(200).json({msg: "User Added successfully"});
   } catch (err) {
-    console.error("Registration Error:", err);
-
-    if (err.name === "ValidationError") {
-      return res.status(400).json({ msg: "Database validation error", details: err.errors });
-    }
-
     res.status(500).json({ msg: "Internal Server Error" });
   }
 };
-
 
 // -------------------- LOGIN API ----------------------------
 
@@ -287,24 +267,17 @@ export const getUser = async (req, res) => {
 
 export const getUsers = async (req, res) => {
   try {
-    // Step 1: Ensure `req.user` is available and has the necessary role
-    const user = req.user;
-    if (!user) {
-      return res.status(403).json({ message: "This endpoint is only for Admins" });
-    }
 
-    // Step 2: Fetch all users from the database
-    const users = await User.find();
 
-    // Step 3: Handle case where no users are found
+      const users = await User.find();
+      const user=req.user;
+
     if (!users.length) {
       return res.status(404).json({ message: "No users found" });
     }
 
-    // Step 4: Send the list of users along with the requesting user's information
-    return res.status(200).json({ users, user });
+    return res.status(200).json({ users, user});
   } catch (error) {
-
     return res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };
@@ -395,43 +368,42 @@ export const newInvoive = async (req, res) => {
 };
 
 // ------------------------  Get All Invoice created by one user or All For user or admin ---------------------
-
 export const invoices = async (req, res) => {
   try {
-    // Validate the presence of required user details
     const user = req.user;
-    if (!user || !user.email || !user.role) {
-      return res.status(400).json({ msg: "Invalid request: Missing user information" });
-    }
-
     const { email, role } = user;
 
-    // Fetch invoices based on the user's role
     let invoices = [];
-    if (role === "root" || role === "admin") {
-      invoices = await Invoice.find(); // Fetch all invoices for admin/root
-    } else {
-      invoices = await Invoice.find({ email }); // Fetch user-specific invoices
+    if (role === "root") {
+      // For root, fetch all invoices
+      invoices = await Invoice.find();
+    } else if (role === "admin") { 
+      // For admin, find all users created by this admin
+      const subUsers = await User.find({ createdBy: email });
+      
+      // Normalize emails to lowercase
+      const subUserEmails = subUsers.map((u) => u.email.toLowerCase());
+    
+      // Fetch invoices for those sub-users, converting invoice email to lowercase if needed
+      invoices = await Invoice.find({
+        email: { $in: subUserEmails.map(e => e.toLowerCase()) }
+      });      
+    }
+     else {
+      // For regular users, fetch invoices associated with their email
+      invoices = await Invoice.find({ email });
     }
 
-    // Check if invoices exist
     if (!invoices || invoices.length === 0) {
       return res.status(404).json({ msg: "No invoices found" });
     }
 
-    // Send successful response
     res.status(200).json({ invoices, user });
   } catch (error) {
     console.error("Error fetching invoices:", error);
-
-    // Send error response
-    res.status(500).json({
-      msg: "Internal Server Error",
-      error: error.message,
-    });
+    res.status(500).json({ msg: "Internal Server Error", error: error.message });
   }
 };
-
 // ---------------------- Invoice Delete API for user or Admin -----------------------------
 
 export const deleteInvoice = async (req, res) => {
@@ -507,63 +479,18 @@ export const updateInvoice = async (req, res) => {
 
 export const searchCustomer = async (req, res) => {
   try {
-    const { query, email } = req.body;
+    const email = req.user?.email;
+    const role = req.user?.role;
 
-    // Step 1: Validate required fields
     if (!email) {
-      return res.status(400).json({ msg: "Missing user email" });
+      return res.status(400).json({ msg: "User email is required" });
     }
+    let filter = role === "user" ? { email } : {}; 
+    const invoices = await Invoice.find(filter);
 
-    // Step 2: Fetch invoices based on email
-    const invoices = await Invoice.find({ email });
-
-    if (!invoices.length) {
-      return res.status(200).json({ invoices: [] }); // No invoices found for the user
-    }
-
-    // Step 3: If no query is provided, return all invoices with selected fields
-    if (!query) {
-      const selectedFields = invoices.map((invoice) => ({
-        invoiceId: invoice.invoiceId,
-        to: invoice.to,
-        phone: invoice.phone,
-        email: invoice.email, // Include email in the response
-        address: invoice.address, // Include address in the response
-        total: invoice.total,
-        date: invoice.date,
-      }));
-      return res.status(200).json({ invoices: selectedFields });
-    }
-
-    // Step 4: Perform a search with the query
-    const searchRegex = new RegExp(query, "i");
-
-    const filteredInvoices = invoices
-      .filter((invoice) => {
-        return (
-          (invoice.to && searchRegex.test(invoice.to)) || // Match 'to' field
-          (invoice.phone && searchRegex.test(invoice.phone)) || // Match 'phone' field
-          (invoice.invoiceId && searchRegex.test(invoice.invoiceId)) || // Match 'invoiceId' field
-          (invoice.email && searchRegex.test(invoice.email)) || // Match 'email' field
-          (invoice.address && searchRegex.test(invoice.address)) // Match 'address' field
-        );
-      })
-      .map((invoice) => ({
-        invoiceId: invoice.invoiceId,
-        to: invoice.to,
-        phone: invoice.phone,
-        email: invoice.email, // Include email in the response
-        address: invoice.address, // Include address in the response
-        total: invoice.total,
-        date: invoice.date,
-      }));
-
-    // Step 5: Return the filtered results
-    return res.status(200).json({ invoices: filteredInvoices });
+    return res.status(200).json({ invoices });
   } catch (error) {
     console.error("Error in searchCustomer API:", error);
-
-    // Return a detailed error response
     return res.status(500).json({
       msg: "Internal Server Error",
       error: error.message,
@@ -660,9 +587,14 @@ export const getUserPayments = async (req, res) => {
     let payments = [];
     let invoices = [];
 
-    if (role === "root" || role === "admin") {
+    if (role === "root" ) {
       invoices = await Invoice.find(); 
-    } else if (role === "user") {
+    } else if (role === "admin") {
+      const usersCreated = await User.find({ createdBy: email });
+      const userEmails = usersCreated.map(user => user.email);
+      invoices = await Invoice.find({ email: {$in:userEmails}});
+    }
+    else if (role === "user") {
       invoices = await Invoice.find({ email }); 
     }
 
@@ -909,4 +841,89 @@ export const newMessages = async (req, res) => {
 };
 
 
+export const sendOtp = async (req, res) => {
+  const { email,newUser} = req.body;
+  console.log(req.body)
 
+   if (!email ) return res.status(400).json({ message: "Email is required" });
+
+   if(!newUser){
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User Not Found" });
+    }
+
+   }
+  
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  // Store OTP with an expiration time (5 minutes)
+  otpStorage[email] = { otp, expiresAt: Date.now() + 5 * 60 * 1000 };
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: "Your OTP Code",
+    text: `Your OTP is ${otp}. It is valid for 5 minutes.`,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    res.json({ message: "OTP sent successfully" });
+  } catch (error) {
+    console.error("Error sending OTP email:", error);
+    res.status(500).json({ message: "Error sending OTP", error: error.message });
+  }
+};
+
+export const verifyOtp = async (req, res) => {
+ 
+const { email, otp } = req.body;
+console.log(req.body)
+if (!email || !otp) {
+  return res.status(400).json({ message: "Email and OTP are required" });
+}
+const otpString = Array.isArray(otp) ? otp.join("") : otp;
+const storedOtp = otpStorage[email];
+if (!storedOtp) {
+  return res.status(400).json({ message: "No OTP found for this email" });
+}
+if (Date.now() > storedOtp.expiresAt) {
+  return res.status(400).json({ message: "OTP expired" });
+}
+if (storedOtp.otp !== otpString) {
+  return res.status(400).json({ message: "Invalid OTP" });
+}
+
+// OTP is valid, remove it from storage
+delete otpStorage[email];
+res.json({ message: "OTP verified successfully" });
+};
+
+ 
+
+export const resetPassword = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    // Find the user by email
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Hash the new password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Update the user's password and save
+    user.password = hashedPassword;
+    await user.save();
+
+    return res.status(200).json({ message: "Password reset successfully" });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Error resetting password", error: error.message });
+  }
+};

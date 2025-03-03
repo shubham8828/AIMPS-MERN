@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   FaGithub,
   FaLinkedin,
@@ -11,6 +12,25 @@ import './Team.css'
 
 
 const Team = () => {
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handlePopState = () => {
+      // When a popstate event occurs, redirect to /home
+      navigate("/", { replace: true });
+    };
+
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [navigate]);
+
+
+
+  
   const teamHead = {
     title: "Project Mentor",
     name: "Prof. Vandana Maurya",

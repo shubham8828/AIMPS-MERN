@@ -1,6 +1,9 @@
 import React, { useEffect, useState, Suspense } from "react";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import axios from "axios";
+import ForgetPassword from "./Component/ForgetPassword.jsx";
+import OtpVerification from "./Component/OtpVerification.jsx";
+import ResetPassword from "./Component/ResetPassword.jsx";
 
 // Lazy Loaded Components
 const Navbar = React.lazy(() => import("./Component/Navbar.jsx"));
@@ -9,7 +12,7 @@ const Contact = React.lazy(() => import("./Pages/Contact.jsx"));
 const Invoices = React.lazy(() => import("./Pages/Invoices.jsx"));
 const NewInvoices = React.lazy(() => import("./Pages/NewInvoices.jsx"));
 const Profile = React.lazy(() => import("./Pages/Profile.jsx"));
-const AuthForm = React.lazy(() => import("./Component/AuthForm.jsx"));
+const Login = React.lazy(() => import("./Component/Login.jsx"));
 const Home = React.lazy(() => import("./Pages/Home.jsx"));
 const InvoiceDetails = React.lazy(() =>
   import("./Component/InvoiceDetails.jsx")
@@ -20,7 +23,6 @@ const Payment = React.lazy(() => import("./Pages/Payment.jsx"));
 const PaymentList = React.lazy(() => import("./Pages/PaymentList.jsx"));
 const Message = React.lazy(() => import("./Pages/Message.jsx"));
 const Users = React.lazy(() => import("./Pages/Users.jsx"));
-const Admins = React.lazy(() => import("./Pages/Admins.jsx"));
 const AddUser = React.lazy(() => import("./Pages/AddUser.jsx"));
 const Team = React.lazy(() => import("./Pages/Team.jsx"));
 const EditUser = React.lazy(() => import("./Pages/EditUser.jsx"));
@@ -73,125 +75,113 @@ const App = () => {
   };
 
   return (
-
     <BrowserRouter>
       <Suspense fallback={<div>Loading...</div>}>
         <Navbar setToken={setToken} />
         <div className="main">
-        <Routes>
-          <Route path="/" element={token ? <Home /> : <LandingPage />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact/>} />
-          <Route path="/team" element={<Team />} />
-          <Route path="/login" element={<AuthForm setToken={setToken} />} />
-          <Route path="/register" element={<AuthForm setToken={setToken} />} />
+          <Routes>
+            <Route path="/" element={token ? <Home /> : <LandingPage />} />
+            <Route path="/home" element={token && <Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/team" element={<Team />} />
+            <Route path="/otp-verification" element={<OtpVerification />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/forgetpassword" element={<ForgetPassword />} />
+            <Route path="/login" element={<Login setToken={setToken} />} />
+            {/* Private Routes */}
+            <Route
+              path="/dashboard"
+              element={
+                <PrivateRoute>
+                  <Home />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/invoices"
+              element={
+                <PrivateRoute>
+                  <Invoices />
+                </PrivateRoute>
+              }
+            />
 
-          {/* Private Routes */}
-          <Route
-            path="/dashboard"
-            element={
-              <PrivateRoute>
-                <Home />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/invoices"
-            element={
-              <PrivateRoute>
-                <Invoices />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/users"
-            element={
-              <PrivateRoute allowedRoles={["admin", "root"]}>
-                <Users />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/admins"
-            element={
-              <PrivateRoute allowedRoles={["admin", "root"]}>
-                <Admins />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/adduser"
-            element={
-              <PrivateRoute allowedRoles={["root"]}>
-                <AddUser />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/admin/edit"
-            element={
-              <PrivateRoute allowedRoles={["root"]}>
-                <EditUser />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/user/edit"
-            element={
-              <PrivateRoute allowedRoles={["admin", "root"]}>
-                <EditUser />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/new-invoice"
-            element={
-              <PrivateRoute>
-                <NewInvoices />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <PrivateRoute>
-                <Profile />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/invoice-details"
-            element={
-              <PrivateRoute>
-                <InvoiceDetails />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/payments"
-            element={
-              <PrivateRoute>
-                <Payment />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/payment-details"
-            element={
-              <PrivateRoute>
-                <PaymentList />
-              </PrivateRoute>
-            }
-          />
-          <Route 
-          path="/message" 
-          element={
-            <PrivateRoute>
-              <Message />
-            </PrivateRoute>
-          } 
-        />
-        </Routes>
+            <Route
+              path="/users"
+              element={
+                <PrivateRoute allowedRoles={["admin", "root"]}>
+                  <Users />
+                </PrivateRoute>
+              }
+            />
+
+            <Route
+              path="/adduser"
+              element={
+                <PrivateRoute allowedRoles={["root", "admin"]}>
+                  <AddUser />
+                </PrivateRoute>
+              }
+            />
+
+            <Route
+              path="/user/edit"
+              element={
+                <PrivateRoute allowedRoles={["admin", "root"]}>
+                  <EditUser />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/new-invoice"
+              element={
+                <PrivateRoute>
+                  <NewInvoices />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <PrivateRoute>
+                  <Profile />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/invoice-details"
+              element={
+                <PrivateRoute>
+                  <InvoiceDetails />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/payments"
+              element={
+                <PrivateRoute>
+                  <Payment />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/payment-details"
+              element={
+                <PrivateRoute>
+                  <PaymentList />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/message"
+              element={
+                <PrivateRoute>
+                  <Message />
+                </PrivateRoute>
+              }
+            />
+          </Routes>
         </div>
         <Footer />
       </Suspense>

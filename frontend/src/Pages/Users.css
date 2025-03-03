@@ -41,7 +41,21 @@
     outline: none;
     transition: border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
   }
-  .users-search-bar:focus {
+  
+.users-filter{
+  width: 150px;
+  border-radius: 30px;
+  padding: 10px;
+  border: 2px solid gray;
+  cursor: pointer;
+}
+
+.users-filter:focus{
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+.users-search-bar:focus {
     border-color: #007bff;
     box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
   }
@@ -127,22 +141,20 @@
 
     .users-search-bar-group{
       flex-direction: column;
+      margin-bottom: 50px;
     }
-    .users-search-bar{
-      width: 80%;
+    .users-search-bar,.users-filter{
+      width: 90%;
+      margin: 2px;
+      height: 40px;
+      font-size: 10px;
+      padding: 10px 5px ;
     }
   
     .users-table th,
     .users-table td {
       font-size: 14px;
       padding: 8px;
-    }
-  }
-
-  @media (max-width: 450px) {
-   
-    .users-search-bar {
-      width: 70%;
     }
   }
   

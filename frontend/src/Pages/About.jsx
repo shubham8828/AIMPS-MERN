@@ -1,18 +1,33 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "./About.css";
+
 const About = () => {
-    
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handlePopState = () => {
+      // When a popstate event occurs, redirect to /home
+      navigate("/", { replace: true });
+    };
+
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [navigate]);
+
   return (
-    
     <div className="main-container">
       <div className="about-container">
         <h2>About AIMPS</h2>
         <p>
           Welcome to AIMPS (Advanced Invoice Management & Payment Solutions),
-          your one-stop platform for streamlining invoicing and payment
-          processes. Our goal is to offer a seamless solution for businesses and
-          individuals looking to manage their invoicing more efficiently,
-          effectively eliminating the complexities of traditional methods.
+          your one-stop platform for streamlining invoicing and payment processes.
+          Our goal is to offer a seamless solution for businesses and individuals
+          looking to manage their invoicing more efficiently, effectively eliminating
+          the complexities of traditional methods.
         </p>
       </div>
       <div className="about-container">
@@ -45,23 +60,21 @@ const About = () => {
       <div className="about-container">
         <h2>Our Mission</h2>
         <p>
-          At AIMPS, our mission is to make invoice management smarter and
-          easier. We aim to reduce manual work, improve accuracy, and offer a
-          reliable platform that helps businesses of all sizes handle their
-          financial processes effectively. We believe in empowering our users
-          with tools that enhance productivity and decision-making, paving the
-          way for their growth.
+          At AIMPS, our mission is to make invoice management smarter and easier.
+          We aim to reduce manual work, improve accuracy, and offer a reliable platform
+          that helps businesses of all sizes handle their financial processes effectively.
+          We believe in empowering our users with tools that enhance productivity and
+          decision-making, paving the way for their growth.
         </p>
       </div>
       <div className="about-container">
         <h2>Why Choose AIMPS?</h2>
         <p>
           AIMPS stands out with its user-friendly interface, powerful automation
-          features, and AI-enhanced tools. Our platform adapts to the unique
-          needs of each business, whether you're a small startup or a large
-          enterprise, ensuring efficient financial management. We prioritize
-          customer satisfaction, providing exceptional support and regular
-          updates to enhance your experience.
+          features, and AI-enhanced tools. Our platform adapts to the unique needs
+          of each business, whether you're a small startup or a large enterprise,
+          ensuring efficient financial management. We prioritize customer satisfaction,
+          providing exceptional support and regular updates to enhance your experience.
         </p>
       </div>
       <div className="about-container">
@@ -103,7 +116,6 @@ const About = () => {
         </p>
       </div>
     </div>
-
   );
 };
 

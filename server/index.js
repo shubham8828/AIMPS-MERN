@@ -9,11 +9,11 @@ const app = express();
 
 app.use(cors(
     
-    {
-        origin: ["https://aimps.vercel.app","http://localhost:5173/"],
-        methods: ["POST", "GET","PUT","DELETE"],
-        credentials: true
-    }
+    // {
+    //     origin: ["https://aimps.vercel.app","http://localhost:5173/"],
+    //     methods: ["POST", "GET","PUT","DELETE"],
+    //     credentials: true
+    // }
 
 ));
 app.use(express.json());
@@ -30,14 +30,13 @@ mongoose.connect(process.env.URL)
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
-// Define routes
 app.use('/api', Routes);
 
 app.get('/', (req, res) => {
-    res.status(200).json({server:"Server is running"})
-
-    
+    res.status(200).json({server:"Server is running"})  
   });  
+
+
 
 
 const PORT = process.env.PORT||4000;

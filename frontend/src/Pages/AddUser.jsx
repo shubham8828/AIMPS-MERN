@@ -1,11 +1,11 @@
-import React, { useState, useRef } from "react";
-import defaultProfile from "../asset/logo.png"; // Replace with the path to your default profile image
+import React, { useState, useRef, useEffect } from "react";
+import defaultProfile from "../asset/logo.png"; // Replace with your default profile image path
 import axios from "axios";
 import ImageCompressor from "image-compressor.js"; // For image compression
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import Spinner from "../Component/Spinner.jsx";
-import "../Component/AuthForm.css";
+import "./AddUser.css";
 
 const statesOfIndia = [
   "Andhra Pradesh",
@@ -46,7 +46,6 @@ const statesOfIndia = [
   "Puducherry",
 ];
 
-
 const AddAdmin = () => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -60,15 +59,16 @@ const AddAdmin = () => {
       localArea: "",
       city: "",
       state: "",
-      country: "", // Fixed to India
+      country: "",
       pin: "",
     },
-    role: "",
+    role: "user",
   });
 
   const navigate = useNavigate();
   const imageRef = useRef();
 
+  // Handle input changes and image compression
   const handleChange = (e) => {
     const { name, value, files } = e.target;
     if (name === "image" && files[0]) {
@@ -97,8 +97,6 @@ const AddAdmin = () => {
   };
 
   const handleSubmit = async (e) => {
-    console.log(formData);
-
     e.preventDefault();
     setLoading(true);
 
@@ -106,67 +104,107 @@ const AddAdmin = () => {
       ...formData,
       shopname: formData.shopname || "AIMPS",
       address: {
-        ...formData.address,
-        localArea: formData.address.localArea,
-        city: formData.address.city,
-        state: formData.address.state,
-        country: formData.address.country,
-        pin: formData.address.pin,
+        localArea: formData.address.localArea || "",
+        city: formData.address.city || "",
+        state: formData.address.state || "",
+        country: formData.address.country || "",
+        pin: formData.address.pin || "",
       },
     };
-    console.log(payload);
 
-    try {
-      const url = "https://aimps-server.vercel.app/api/register";
-      await axios.post(url, payload);
-      toast.success("User Added Successfully", { position: "top-center" });
-      setFormData({
-        name: "",
-        shopname: "",
-        email: "",
-        phone: "",
-        password: "",
-        image: "",
-        address: {
-          localArea: "",
-          city: "",
-          state: "",
-          country: "",
-          pin: "",
-        },
-        role: "",
-      });
-      navigate("/");
-    } catch (error) {
-      toast.error(error.response?.data?.msg || "An error occurred", {
-        position: "top-center",
-      });
-    } finally {
-      setLoading(false);
-    }
+    
+      const email=formData.email;
+      const newUser=true;
+      axios.post("https://aimps-server.vercel.app/api/send-otp",{email,newUser})
+      .then((res)=>{
+        toast.success("OTP sent successfully",{position:'top-center'});
+        const data=payload;
+        navigate("/otp-verification", { state: { data }, replace: true });    
+      })
+      .catch(()=>{
+        toast.error("Email does not exist!",{position:'top-center'});
+        navigate('/login',{replace:true})
+      })
+      .finally(()=>{
+          setLoading(false);
+          resetForm();
+        })
+  
+      
+
+      // axios.post("https://aimps-server.vercel.app/api/user/add", payload,{headers})
+      // .then((res)=>{
+      //   console.log(res)
+      //   toast.success("User Added Successfully", {position: "top-center"});
+      //   navigate("/");
+      // })
+      // .catch(()=>{
+      //   toast.error("Internal Server Error Try Again!",{position:'top-center'})
+      // })
+      // .finally(()=>{
+      //   setLoading(false);
+      //   resetForm();
+      // })
+
+
+
+     
+    
+  };
+
+  // Reset form function
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      shopname: "",
+      email: "",
+      phone: "",
+      password: "",
+      image: "",
+      address: {
+        localArea: "",
+        city: "",
+        state: "",
+        country: "",
+        pin: "",
+      },
+      role: "user",
+    });
   };
 
   const triggerImageUpload = () => {
     imageRef.current.click();
   };
 
+  // Redirect to home on back navigation
+  useEffect(() => {
+    const handlePopState = () => {
+      navigate("/", { replace: true });
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [navigate]);
+
   if (loading) {
-    return <Spinner />;
+    return <Spinner />
   }
+
 
   return (
     <div className="main-container">
       <div className="auth-container">
-        <h2 style={{ textAlign: "center", marginBottom: "10px" }}>Add User </h2>
+        <h2 className="modern-title">Add User</h2>
         <form className="auth-form" onSubmit={handleSubmit}>
           <div className="form-group">
-            <p style={{ textAlign: "center" }}>Profile Image</p>
-            <div className="profile-image">
+            <p className="form-label center-text">Profile Image</p>
+            <div className="profile-image" onClick={triggerImageUpload}>
               <img
                 src={formData.image || defaultProfile}
                 alt="Profile"
                 className="profile-pic"
-                onClick={triggerImageUpload}
               />
             </div>
             <input
@@ -179,15 +217,18 @@ const AddAdmin = () => {
               style={{ display: "none" }}
             />
           </div>
+
           <div className="form-group">
-            <label htmlFor="name">Name</label>
+            <label htmlFor="name" className="form-label">
+              Name
+            </label>
             <input
               type="text"
               name="name"
               id="name"
               value={formData.name}
               onChange={(e) => {
-                const inputValue = e.target.value.replace(/[^a-zA-Z\s]/g, ""); // Allow only letters and spaces
+                const inputValue = e.target.value.replace(/[^a-zA-Z\s]/g, "");
                 setFormData({ ...formData, name: inputValue });
               }}
               required
@@ -195,11 +236,14 @@ const AddAdmin = () => {
               maxLength={50}
               autoComplete="on"
               placeholder="Enter your name"
+              className="modern-input"
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email" className="form-label">
+              Email
+            </label>
             <input
               type="email"
               name="email"
@@ -209,11 +253,14 @@ const AddAdmin = () => {
               required
               autoComplete="email"
               placeholder="Enter your email"
+              className="modern-input"
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="phone">Mobile No.</label>
+            <label htmlFor="phone" className="form-label">
+              Mobile No.
+            </label>
             <input
               type="tel"
               name="phone"
@@ -230,10 +277,14 @@ const AddAdmin = () => {
               placeholder="Enter 10-digit mobile number"
               maxLength={10}
               autoComplete="tel"
+              className="modern-input"
             />
           </div>
+
           <div className="form-group">
-            <label htmlFor="password">Password</label>
+            <label htmlFor="password" className="form-label">
+              Password
+            </label>
             <input
               type="password"
               name="password"
@@ -245,55 +296,44 @@ const AddAdmin = () => {
               maxLength={20}
               autoComplete="current-password"
               placeholder="Enter a strong password"
+              className="modern-input"
             />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="role">Role</label>
-            <select
-              name="role"
-              id="role"
-              value={formData.role}
-              onChange={handleChange}
-              required
-            >
-              <option value="">Select Role</option>
-              <option value="user">User</option>
-              <option value="admin">Admin</option>
-              <option value="root">Root</option>
-
-            </select>
           </div>
 
           {formData.role === "user" && (
             <div className="form-group">
-              <label htmlFor="shopname">Shop Name</label>
+              <label htmlFor="shopname" className="form-label">
+                Shop Name
+              </label>
               <input
                 type="text"
                 name="shopname"
                 id="shopname"
                 value={formData.shopname}
                 onChange={(e) => {
-                  const inputValue = e.target.value.replace(/[^a-zA-Z\s]/g, ""); // Allow only letters and spaces
+                  const inputValue = e.target.value.replace(/[^a-zA-Z\s]/g, "");
                   setFormData({ ...formData, shopname: inputValue });
                 }}
                 required
                 minLength={3}
                 maxLength={50}
                 autoComplete="organization"
+                className="modern-input"
               />
             </div>
           )}
 
           <div className="form-group">
-            <label htmlFor="localArea">Local Area</label>
+            <label htmlFor="localArea" className="form-label">
+              Local Area
+            </label>
             <input
               type="text"
               name="address.localArea"
               id="localArea"
               value={formData.address.localArea}
               onChange={(e) => {
-                const inputValue = e.target.value.replace(/[^a-zA-Z\s]/g, ""); // Allow only letters and spaces
+                const inputValue = e.target.value.replace(/[^a-zA-Z\s]/g, "");
                 setFormData({
                   ...formData,
                   address: { ...formData.address, localArea: inputValue },
@@ -301,18 +341,21 @@ const AddAdmin = () => {
               }}
               required
               autoComplete="street-address"
+              className="modern-input"
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="city">City</label>
+            <label htmlFor="city" className="form-label">
+              City
+            </label>
             <input
               type="text"
               name="address.city"
               id="city"
               value={formData.address.city}
               onChange={(e) => {
-                const inputValue = e.target.value.replace(/[^a-zA-Z\s]/g, ""); // Allow only letters and spaces
+                const inputValue = e.target.value.replace(/[^a-zA-Z\s]/g, "");
                 setFormData({
                   ...formData,
                   address: { ...formData.address, city: inputValue },
@@ -320,27 +363,35 @@ const AddAdmin = () => {
               }}
               required
               autoComplete="address-level2"
+              className="modern-input"
             />
           </div>
+
           <div className="form-group">
-                  <label htmlFor="address.state">State</label>
-                  <select
-                    name="address.state"
-                    id="state"
-                    value={formData.address.state}
-                    onChange={handleChange}
-                    required
-                  >
-                    <option value="">Select State</option>
-                    {statesOfIndia.map((state) => (
-                      <option key={state} value={state}>
-                        {state}
-                      </option>
-                    ))}
-                  </select>
-                </div>          
+            <label htmlFor="address.state" className="form-label">
+              State
+            </label>
+            <select
+              name="address.state"
+              id="state"
+              value={formData.address.state}
+              onChange={handleChange}
+              required
+              className="modern-input"
+            >
+              <option value="">Select State</option>
+              {statesOfIndia.map((state) => (
+                <option key={state} value={state}>
+                  {state}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div className="form-group">
-            <label htmlFor="country">Country</label>
+            <label htmlFor="country" className="form-label">
+              Country
+            </label>
             <select
               name="address.country"
               id="country"
@@ -348,14 +399,17 @@ const AddAdmin = () => {
               onChange={handleChange}
               required
               autoComplete="country"
+              className="modern-input"
             >
-              <option>Select Country</option>
+              <option value="">Select Country</option>
               <option value="India">India</option>
-              <option value="USA">USA</option>
             </select>
           </div>
+
           <div className="form-group">
-            <label htmlFor="pin">PIN</label>
+            <label htmlFor="pin" className="form-label">
+              PIN
+            </label>
             <input
               type="text"
               name="address.pin"
@@ -363,30 +417,27 @@ const AddAdmin = () => {
               value={formData.address.pin}
               required
               onChange={(e) => {
-                const inputValue = e.target.value.replace(/[^0-9]/g, ""); // Allow only numbers
+                const inputValue = e.target.value.replace(/[^0-9]/g, "");
                 if (inputValue.length <= 6) {
-                  // Limit input to 6 characters
                   setFormData({
                     ...formData,
-                    address: {
-                      ...formData.address,
-                      pin: inputValue, // Update the pin field correctly
-                    },
+                    address: { ...formData.address, pin: inputValue },
                   });
                 }
               }}
-              pattern="[0-9]{6}" // Ensure exactly 6 digits
+              pattern="[0-9]{6}"
               maxLength={6}
-              autoComplete="postal-code" // Suggest browser autocomplete for postal codes
+              autoComplete="postal-code"
+              className="modern-input"
             />
           </div>
-          <div className="form-group" style={{display:'flex',flexDirection:'column', alignItems:'center'}}>
-          <button type="submit" className="addAdmin">
-            Add User
-          </button>
-        </div>
+
+          <div className="form-group center-text">
+            <button type="submit" className="modern-btn">
+              Add User
+            </button>
+          </div>
         </form>
-        
       </div>
     </div>
   );

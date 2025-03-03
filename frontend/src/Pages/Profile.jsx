@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import {useNavigate} from 'react-router-dom'
 import axios from "axios";
 import ImageCompressor from "image-compressor.js"; // For image compression
 import toast from "react-hot-toast";
@@ -48,6 +49,7 @@ const Profile = () => {
   const [user, setUser] = useState(null); // Store user data
   const [formData, setFormData] = useState({}); // Store form data
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const imageRef = useRef();
 
@@ -56,27 +58,39 @@ const Profile = () => {
     Authorization: `Bearer ${token}`,
   };
 
+  
+  const fetchUserData = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get("https://aimps-server.vercel.app/api/user", {
+        headers,
+      });
+
+      setUser(res.data.user);
+      setFormData(res.data.user);
+    } catch (error) {
+      console.error("Failed to fetch user data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
   useEffect(() => {
-    // Fetch user data
+    fetchUserData();
 
-    const fetchUserData = async () => {
-      setLoading(true);
-      try {
-        const res = await axios.get("https://aimps-server.vercel.app/api/user", {
-          headers,
-        });
-
-        setUser(res.data.user);
-        setFormData(res.data.user);
-      } catch (error) {
-        console.error("Failed to fetch user data:", error);
-      } finally {
-        setLoading(false);
-      }
+    
+    const handlePopState = () => {
+      // When a popstate event occurs, redirect to /home
+      navigate("/", { replace: true });
     };
 
-    fetchUserData();
-  }, []);
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [navigate]);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;

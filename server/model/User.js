@@ -40,7 +40,7 @@ const userSchema = new mongoose.Schema({
     },
     city: {
       type: String,
-      required: [true, "City is required"],
+      required: [true, "City is required" ],
       trim: true,
     },
     state: {
@@ -59,6 +59,12 @@ const userSchema = new mongoose.Schema({
       match: [/^\d{6}$/, "PIN must be 6 digits"],
     },
   },
+  createdBy:{
+    type:String,
+    required:true,
+    default:"aimps24x7@gmail.com"
+  },
+  
   password: {
     type: String,
     required: [true, "Password is required"],
