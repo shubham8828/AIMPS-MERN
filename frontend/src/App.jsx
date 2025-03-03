@@ -4,6 +4,7 @@ import axios from "axios";
 import ForgetPassword from "./Component/ForgetPassword.jsx";
 import OtpVerification from "./Component/OtpVerification.jsx";
 import ResetPassword from "./Component/ResetPassword.jsx";
+import Setting from "./Pages/Setting.jsx";
 
 // Lazy Loaded Components
 const Navbar = React.lazy(() => import("./Component/Navbar.jsx"));
@@ -103,6 +104,14 @@ const App = () => {
               element={
                 <PrivateRoute>
                   <Invoices />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/setting"
+              element={
+                <PrivateRoute>
+                  <Setting />
                 </PrivateRoute>
               }
             />
