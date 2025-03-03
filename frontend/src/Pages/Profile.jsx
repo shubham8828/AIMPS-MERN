@@ -136,6 +136,17 @@ const Profile = () => {
     }
   };
 
+  const validateEmail = (email) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+  };
+
+  if (!validateEmail(formData.email)) {
+    toast.error("Invalid email address", { position: "top-center" });
+    setLoading(false);
+    return;
+  }
+  
   const triggerImageUpload = () => {
     imageRef.current.click();
   };
@@ -203,7 +214,6 @@ const Profile = () => {
               onChange={handleChange}
               required
               autoComplete="on"
-              pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
               placeholder="Enter your email"
               readOnly
 
