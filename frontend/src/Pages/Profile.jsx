@@ -275,7 +275,7 @@ const Profile = () => {
             />
           </div>
 
-          <button type="submit">Update Profile</button>
+          <button type="submit" className="submit-btn">Update Profile</button>
         </form>
       </div>
     </div>
