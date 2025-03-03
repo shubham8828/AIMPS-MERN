@@ -1,48 +1,22 @@
 import React, { useEffect, useState, useRef } from "react";
-import {useNavigate} from 'react-router-dom'
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import ImageCompressor from "image-compressor.js"; // For image compression
 import toast from "react-hot-toast";
 import "./Profile.css";
 import Spinner from "../Component/Spinner";
+// Ensure you have a default profile image defined or imported
+import defaultProfile from "../assets/defaultProfile.png"; 
 
 const statesOfIndia = [
-  "Andhra Pradesh",
-  "Arunachal Pradesh",
-  "Assam",
-  "Bihar",
-  "Chhattisgarh",
-  "Goa",
-  "Gujarat",
-  "Haryana",
-  "Himachal Pradesh",
-  "Jharkhand",
-  "Karnataka",
-  "Kerala",
-  "Madhya Pradesh",
-  "Maharashtra",
-  "Manipur",
-  "Meghalaya",
-  "Mizoram",
-  "Nagaland",
-  "Odisha",
-  "Punjab",
-  "Rajasthan",
-  "Sikkim",
-  "Tamil Nadu",
-  "Telangana",
-  "Tripura",
-  "Uttar Pradesh",
-  "Uttarakhand",
-  "West Bengal",
-  "Andaman and Nicobar Islands",
-  "Chandigarh",
-  "Dadra and Nagar Haveli and Daman and Diu",
-  "Delhi",
-  "Jammu and Kashmir",
-  "Ladakh",
-  "Lakshadweep",
-  "Puducherry",
+  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
+  "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand",
+  "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur",
+  "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab",
+  "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura",
+  "Uttar Pradesh", "Uttarakhand", "West Bengal", "Andaman and Nicobar Islands",
+  "Chandigarh", "Dadra and Nagar Haveli and Daman and Diu", "Delhi",
+  "Jammu and Kashmir", "Ladakh", "Lakshadweep", "Puducherry",
 ];
 
 const Profile = () => {
@@ -50,22 +24,15 @@ const Profile = () => {
   const [formData, setFormData] = useState({}); // Store form data
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
   const imageRef = useRef();
 
   const token = localStorage.getItem("token");
-  const headers = {
-    Authorization: `Bearer ${token}`,
-  };
+  const headers = { Authorization: `Bearer ${token}` };
 
-  
   const fetchUserData = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("https://aimps-server.vercel.app/api/user", {
-        headers,
-      });
-
+      const res = await axios.get("https://aimps-server.vercel.app/api/user", { headers });
       setUser(res.data.user);
       setFormData(res.data.user);
     } catch (error) {
@@ -75,18 +42,15 @@ const Profile = () => {
     }
   };
 
-
   useEffect(() => {
     fetchUserData();
 
-    
     const handlePopState = () => {
-      // When a popstate event occurs, redirect to /home
+      // When a popstate event occurs, redirect to home
       navigate("/", { replace: true });
     };
 
     window.addEventListener("popstate", handlePopState);
-
     return () => {
       window.removeEventListener("popstate", handlePopState);
     };
@@ -121,13 +85,24 @@ const Profile = () => {
     }
   };
 
+  // Email validation moved to handleSubmit
+  const validateEmail = (email) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validate email on submit
+    if (!validateEmail(formData.email)) {
+      toast.error("Invalid email address", { position: "top-center" });
+      return;
+    }
+
     setLoading(true);
     try {
-      await axios.put("https://aimps-server.vercel.app/api/update", formData, {
-        headers,
-      });
+      await axios.put("https://aimps-server.vercel.app/api/update", formData, { headers });
       toast.success("Profile updated successfully", { position: "top-center" });
     } catch (error) {
       toast.error("Failed to update profile", { position: "top-center" });
@@ -136,29 +111,14 @@ const Profile = () => {
     }
   };
 
-  const validateEmail = (email) => {
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return regex.test(email);
-  };
-
-  if (!validateEmail(formData.email)) {
-    toast.error("Invalid email address", { position: "top-center" });
-    setLoading(false);
-    return;
-  }
-  
   const triggerImageUpload = () => {
     imageRef.current.click();
   };
 
-  if (!user) {
+  // While waiting for user data or during loading, show a spinner
+  if (!user || loading) {
     return <Spinner />;
   }
-
-  if (loading) {
-    return <Spinner />;
-  }
-
   return (
     <div className="main-container">
       <div className="profile-container">
