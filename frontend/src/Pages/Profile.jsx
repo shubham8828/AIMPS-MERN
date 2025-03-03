@@ -5,7 +5,7 @@ import ImageCompressor from "image-compressor.js"; // For image compression
 import toast from "react-hot-toast";
 import "./Profile.css";
 import Spinner from "../Component/Spinner";
-import defaultProfile from "../assets/defaultProfile.png"; // Define a default profile image
+import defaultProfile from "../asset/user.png"; // Define a default profile image
 
 const statesOfIndia = [
   "Andhra Pradesh",
