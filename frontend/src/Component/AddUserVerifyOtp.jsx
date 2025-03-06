@@ -5,67 +5,53 @@ import verificationVideo from "../asset/Verification.mp4";
 import axios from "axios";
 import toast from "react-hot-toast";
 
-const OtpVerification = () => {
+const AddUserVerifyOtp = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const data = location.state?.payload;
 
-  // Retrieve email from navigation state or redirect if missing
-  const email = location.state?.email || "";
- 
   useEffect(() => {
-    if (!email) {
-      toast.error("Invalid access. Please request a new OTP.");
+    if (!data?.email) {
+      toast.error("Invalid access. Please request a new OTP.", { position: "top-center" });
       navigate("/login", { replace: true });
     }
-  }, [email, navigate]);
+  }, [data, navigate]);
 
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [otp, setOtp] = useState(new Array(6).fill(""));
   const [error, setError] = useState("");
   const [showAnimation, setShowAnimation] = useState(false);
   const [resendTimer, setResendTimer] = useState(60);
   const [otpExpireTimer, setOtpExpireTimer] = useState(120);
   const inputRefs = useRef([]);
 
-  // Countdown for Resend OTP
   useEffect(() => {
-    if (resendTimer > 0) {
-      const timer = setInterval(() => setResendTimer((prev) => prev - 1), 1000);
-      return () => clearInterval(timer);
-    }
+    const interval = setInterval(() => setResendTimer((prev) => Math.max(prev - 1, 0)), 1000);
+    return () => clearInterval(interval);
   }, [resendTimer]);
 
-  // Countdown for OTP expiration
   useEffect(() => {
-    if (otpExpireTimer > 0) {
-      const timer = setInterval(() => setOtpExpireTimer((prev) => prev - 1), 1000);
-      return () => clearInterval(timer);
-    } else {
+    const interval = setInterval(() => setOtpExpireTimer((prev) => Math.max(prev - 1, 0)), 1000);
+    if (otpExpireTimer === 0) {
       toast.error("OTP expired! Please request a new OTP.", { position: "top-center" });
       navigate("/", { replace: true });
     }
+    return () => clearInterval(interval);
   }, [otpExpireTimer, navigate]);
 
-  // Handle OTP input changes
   const handleChange = (index, value) => {
-    if (!/^\d?$/.test(value)) return; // Allow only digits (0-9)
-    
+    if (!/\d?/.test(value)) return;
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
-
-    if (value && index < otp.length - 1) {
-      inputRefs.current[index + 1]?.focus();
-    }
+    if (value && index < 5) inputRefs.current[index + 1]?.focus();
   };
 
-  // Handle Backspace for OTP input navigation
   const handleKeyDown = (index, e) => {
     if (e.key === "Backspace" && !otp[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
   };
 
-  // Handle OTP paste
   const handlePaste = (e) => {
     const pastedData = e.clipboardData.getData("Text").trim();
     if (/^\d{6}$/.test(pastedData)) {
@@ -74,40 +60,45 @@ const OtpVerification = () => {
     }
   };
 
-  // Handle OTP Verification
   const handleSubmit = async () => {
-    if (otp.includes("")) {
-      setError("Please enter all 6 digits.");
-      return;
-    }
+    if (otp.includes("")) return setError("Please enter all 6 digits.");
     setError("");
-
-      axios.post("https://aimps-server.vercel.app/api/verify-otp", {email,otp: otp.join(""),
-      })
-      .then(()=>{
-        setShowAnimation(true)
-      })
-      .catch((error) => {
-      toast.error("Invalid OTP", { position: "top-center" });
-    })
-  };
-
-  // Handle animation ending (redirect to reset password)
-  const handleAnimationEnd = () => {
-      toast.success("OTP verified successfully!", { position: "top-center" });
-      navigate("/reset-password", { state:{email} , replace: true });
-  };
-
-  // Resend OTP handler
-  const handleResend = async () => {
-    if (resendTimer > 0) return; // Prevent unnecessary calls
     try {
-      await axios.post("https://aimps-server.vercel.app/api/send-otp", { email });
+        const token = localStorage.getItem("token");
+        const headers = {
+          Authorization: `Bearer ${token}`,
+        };
+    
+      await axios.post("https://aimps-server.vercel.app/api/user/add/verifyOtp", { email: data.email, otp: otp.join("") },{headers});
+      setShowAnimation(true);
+    } catch {
+      toast.error("Invalid OTP", { position: "top-center" });
+    }
+  };
+
+  const handleAnimationEnd = async () => {
+    toast.success("OTP verified successfully!", { position: "top-center" });
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post("https://aimps-server.vercel.app/api/user/add", data, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success("User Added Successfully", { position: "top-center" });
+      navigate("/", { replace: true });
+    } catch {
+      toast.error("Internal Server Error. Try Again!", { position: "top-center" });
+    }
+  };
+
+  const handleResend = async () => {
+    if (resendTimer > 0) return;
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post("https://aimps-server.vercel.app/api/user/add/sendOtp", { email: data.email }, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success("OTP sent successfully", { position: "top-center" });
+      navigate("/user/add/otp-verification", { state: { payload: data }, replace: true });
       setResendTimer(60);
-      setOtpExpireTimer(120);
-      toast.success("OTP Resent Successfully!", { position: "top-center" });
-    } catch (error) {
-      toast.error("Failed to resend OTP", { position: "top-center" });
+    } catch {
+      toast.error("Email does not exist!", { position: "top-center" });
+      navigate("/login", { replace: true });
     }
   };
 
@@ -123,8 +114,7 @@ const OtpVerification = () => {
     <div className="otp-container">
       <div className="otp-box">
         <h2>OTP Verification</h2>
-        <p>Enter the 6-digit code sent to <strong>{email}</strong></p>
-
+        <p>Enter the 6-digit code sent to <strong>{data.email}</strong></p>
         <div className="otp-inputs" onPaste={handlePaste}>
           {otp.map((digit, index) => (
             <input
@@ -138,22 +128,18 @@ const OtpVerification = () => {
             />
           ))}
         </div>
-
         {error && <p className="error-message">{error}</p>}
-
         <button onClick={handleSubmit}>Verify OTP</button>
-
         <div className="resend-container">
           <button onClick={handleResend} disabled={resendTimer > 0} className="resend-button">
             Resend OTP
           </button>
           {resendTimer > 0 && <p className="resend-timer">Resend OTP in {resendTimer}s</p>}
         </div>
-
         <p className="otp-expire-timer">OTP expires in {otpExpireTimer}s</p>
       </div>
     </div>
   );
 };
 
-export default OtpVerification;
+export default AddUserVerifyOtp;

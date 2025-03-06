@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import axios from "axios";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
@@ -35,7 +35,7 @@ const InvoiceDetails = () => {
     const fetchUserData = async () => {
       try {
         const response = await axios.post(
-          "https://aimps-server.vercel.app/api/getInvoice",
+          "https://aimps-server.vercel.app/api/invoice/get",
           { invoiceId },
           { headers }
         );

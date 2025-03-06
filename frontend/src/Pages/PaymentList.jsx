@@ -27,7 +27,7 @@ const PaymentList = () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        "https://aimps-server.vercel.app/api/payment-data",{ headers }
+        "https://aimps-server.vercel.app/api/payment/get",{ headers }
       );
       const fetchedData = response.data.data || [];
       setPaymentData(fetchedData); // Set full payment data

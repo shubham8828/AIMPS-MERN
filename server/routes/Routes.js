@@ -20,7 +20,8 @@ import {
   sendOtp,
   verifyOtp,
   resetPassword,
- 
+ addUserOtp,
+ addUserVerifyOtp
 } from '../controller/Controller.js';
 
 
@@ -29,26 +30,32 @@ const Routes = express.Router();
 Routes.post('/login', login);
 Routes.post('/send-otp',sendOtp)
 Routes.post('/verify-otp',verifyOtp)
-
 Routes.post('/reset-password',resetPassword)
 
 
 Routes.use(AuthenticateToken);
-Routes.get('/user', getUser);
-Routes.post('/user/add', AddUser);
 
-Routes.delete('/deleteuser/:id', deleteUser);
-Routes.post('/create', newInvoive);
-Routes.get('/invoices', invoices);
-Routes.delete('/delete/:id', deleteInvoice);
-Routes.get('/search', searchCustomer); // for searching customers
-Routes.put('/update', update); // update user profile
-Routes.put('/updateInvoice', updateInvoice); // updating invoice
-Routes.post('/payment', makePayment);
-Routes.get('/payment-data', getUserPayments);
-Routes.post('/getInvoice', getInvoice);
-Routes.get('/users', getUsers);
-Routes.post('/messages', getMessages);
-Routes.post('/newmessage', newMessages);
+Routes.post('/user/add/sendOtp',addUserOtp)
+Routes.post('/user/add/verifyOtp',addUserVerifyOtp)
+Routes.get('/user/current', getUser);
+Routes.post('/user/add', AddUser);
+Routes.delete('/user/delete/:id', deleteUser);
+Routes.put('/user/update', update); // update user profile
+Routes.get('/user/all', getUsers);
+Routes.get('/user/search', searchCustomer); // for searching customers
+
+Routes.post('/invoice/new', newInvoive);
+Routes.get('/invoice/all', invoices);
+Routes.delete('/invoice/delete/:id', deleteInvoice);
+Routes.post('/invoice/get', getInvoice);
+
+Routes.put('/invoice/update', updateInvoice); // This API is not in currentaly 
+
+
+Routes.post('/payment/new', makePayment);
+Routes.get('/payment/get', getUserPayments);
+
+Routes.post('/message/all', getMessages);
+Routes.post('/message/new', newMessages);
 
 export default Routes;

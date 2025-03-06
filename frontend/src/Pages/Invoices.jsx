@@ -27,7 +27,7 @@ const Invoices = () => {
   const fetchInvoices = async () => {
     setLoading(true);
     try {
-      const response = await axios.get("http://localhost:4000/api/invoices", {
+      const response = await axios.get("https://aimps-server.vercel.app/api/invoice/all", {
         headers,
       });
       const { invoices, user } = response.data;
@@ -66,7 +66,7 @@ const Invoices = () => {
 
     try {
       await axios
-        .delete(`http://localhost:4000/api/delete/${id}`, { headers })
+        .delete(`https://aimps-server.vercel.app/api/invoice/delete/${id}`, { headers })
         .then((res) => {
           toast.success(res.data.msg, { position: "top-center" });
           setAllInvoices(allInvoices.filter((invoice) => invoice._id !== id));
@@ -186,6 +186,7 @@ const Invoices = () => {
                     <th>Total</th>
                     <th>Address</th>
                     <th>Phone</th>
+                    <th>Created by</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -201,6 +202,7 @@ const Invoices = () => {
                         <td>Rs.{data.total}</td>
                         <td style={{textTransform:'capitalize'}}>{data.address}</td>
                         <td>{data.phone}</td>
+                        <td>{data.email}</td>
                         <td style={{display:'flex'}}>
                           <button
                             className="invoice-delete-btn"

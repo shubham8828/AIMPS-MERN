@@ -94,7 +94,7 @@ const EditUser = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await axios.put("https://aimps-server.vercel.app/api/update", formData, {
+      await axios.put("https://aimps-server.vercel.app/api/user/update", formData, {
         headers,
       });
       toast.success("Profile updated successfully", { position: "top-center" });
@@ -102,7 +102,7 @@ const EditUser = () => {
       toast.error("Failed to update profile", { position: "top-center" });
     } finally {
       setLoading(false);
-      navigate("/admins");
+      navigate("/");
     }
   };
 

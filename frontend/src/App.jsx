@@ -4,7 +4,7 @@ import axios from "axios";
 import ForgetPassword from "./Component/ForgetPassword.jsx";
 import OtpVerification from "./Component/OtpVerification.jsx";
 import ResetPassword from "./Component/ResetPassword.jsx";
-import Setting from "./Pages/Setting.jsx";
+import AddUserVerifyOtp from "./Component/AddUserVerifyOtp.jsx";
 
 // Lazy Loaded Components
 const Navbar = React.lazy(() => import("./Component/Navbar.jsx"));
@@ -45,7 +45,7 @@ const App = () => {
   useEffect(() => {
     if (token) {
       axios
-        .get("https://aimps-server.vercel.app/api/user", {
+        .get("https://aimps-server.vercel.app/api/user/current", {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((response) => {
@@ -108,10 +108,10 @@ const App = () => {
               }
             />
             <Route
-              path="/setting"
+              path="/user/add/otp-verification"
               element={
                 <PrivateRoute>
-                  <Setting />
+                  <AddUserVerifyOtp />
                 </PrivateRoute>
               }
             />

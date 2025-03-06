@@ -13,12 +13,10 @@ const userSchema = new mongoose.Schema({
     ],
     index: true,
   },
-  name: {
+  name: {  
     type: String,
     required: [true, "Name is required"],
     trim: true,
-    minlength: [3, "Name must be at least 3 characters long"],
-    maxlength: [50, "Name cannot exceed 50 characters"],
   },
   shopname: {
     type: String,
@@ -62,17 +60,14 @@ const userSchema = new mongoose.Schema({
   createdBy:{
     type:String,
     required:true,
-    default:"aimps24x7@gmail.com"
   },
   
   password: {
     type: String,
     required: [true, "Password is required"],
-    minlength: [8, "Password must be at least 8 characters long"],
   },
   image: {
     type: String, 
-    
   },
   role: {
     type: String,
@@ -90,3 +85,4 @@ userSchema.index({ email: 1 }, { unique: true });
 const User = mongoose.model("User", userSchema);
 
 export default User;
+

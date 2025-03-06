@@ -79,7 +79,7 @@ const Profile = () => {
   const fetchUserData = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("https://aimps-server.vercel.app/api/user", { headers });
+      const res = await axios.get("https://aimps-server.vercel.app/api/user/current", { headers });
       setUser(res.data.user);
       setFormData(res.data.user || {});
     } catch (error) {
@@ -141,7 +141,7 @@ const Profile = () => {
     }
 
     try {
-      await axios.put("https://aimps-server.vercel.app/api/update", formData, { headers });
+      await axios.put("https://aimps-server.vercel.app/api/user/update", formData, { headers });
       toast.success("Profile updated successfully", { position: "top-center" });
     } catch (error) {
       toast.error("Failed to update profile", { position: "top-center" });

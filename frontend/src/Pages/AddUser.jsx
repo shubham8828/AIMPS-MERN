@@ -111,45 +111,26 @@ const AddAdmin = () => {
         pin: formData.address.pin || "",
       },
     };
+    const token = localStorage.getItem("token");
+    const headers = {
+      Authorization: `Bearer ${token}`,
+    };
 
-    
-      const email=formData.email;
-      const newUser=true;
-      axios.post("https://aimps-server.vercel.app/api/send-otp",{email,newUser})
-      .then((res)=>{
-        toast.success("OTP sent successfully",{position:'top-center'});
-        const data=payload;
-        navigate("/otp-verification", { state: { data }, replace: true });    
+    const email = formData.email;
+    axios
+      .post("https://aimps-server.vercel.app/api/user/add/sendOtp", { email }, {headers})
+      .then((res) => {
+        toast.success("OTP sent successfully", { position: "top-center" });
+        navigate("/user/add/otp-verification", { state: {payload} , replace: true });
       })
-      .catch(()=>{
-        toast.error("Email does not exist!",{position:'top-center'});
-        navigate('/login',{replace:true})
+      .catch(() => {
+        toast.error("Email allready exist", { position: "top-center" });
+        navigate("/login", { replace: true });
       })
-      .finally(()=>{
-          setLoading(false);
-          resetForm();
-        })
-  
-      
-
-      // axios.post("https://aimps-server.vercel.app/api/user/add", payload,{headers})
-      // .then((res)=>{
-      //   console.log(res)
-      //   toast.success("User Added Successfully", {position: "top-center"});
-      //   navigate("/");
-      // })
-      // .catch(()=>{
-      //   toast.error("Internal Server Error Try Again!",{position:'top-center'})
-      // })
-      // .finally(()=>{
-      //   setLoading(false);
-      //   resetForm();
-      // })
-
-
-
-     
-    
+      .finally(() => {
+        setLoading(false);
+        // resetForm();
+      });
   };
 
   // Reset form function
@@ -189,9 +170,8 @@ const AddAdmin = () => {
   }, [navigate]);
 
   if (loading) {
-    return <Spinner />
+    return <Spinner />;
   }
-
 
   return (
     <div className="main-container">

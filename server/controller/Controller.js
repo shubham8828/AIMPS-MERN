@@ -11,6 +11,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const otpStorage = {};
+const addUserOtpStorage = {};
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
@@ -86,6 +87,7 @@ export const AddUser = async (req, res) => {
   }
 };
 
+
 // -------------------- LOGIN API ----------------------------
 
 export const login = async (req, res) => {
@@ -151,12 +153,11 @@ export const update = async (req, res) => {
   try {
   
     const { email, name, address, image, phone, shopname,role} = req.body;
-
     if (!email) {
       return res.status(400).json({ msg: "Email is required to update user details" });
     }
 
-    // Find the user by email
+    // Find the user by email 
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ msg: "User not found" });
@@ -164,7 +165,7 @@ export const update = async (req, res) => {
 
     // Update user fields
     if (name) user.name = name;
-    if (phone) user.phone = phone;
+    if (phone) user.phone = phone; 
     if (shopname) user.shopname = shopname;
     if (role) user.role = role;
 
@@ -190,7 +191,7 @@ export const update = async (req, res) => {
       if (!isAlreadyUploaded) {
         try {
           const uploadResult = await cloudinary.uploader.upload(image, {
-            upload_preset: process.env.CLOUDINARY_UPLOAD_PRESET || "default_preset",
+            upload_preset: "eeeghag0",
             public_id: `${email}_avatar`,
             overwrite: true,
             allowed_formats: ["png", "jpg", "jpeg", "svg"],
@@ -368,42 +369,38 @@ export const newInvoive = async (req, res) => {
 };
 
 // ------------------------  Get All Invoice created by one user or All For user or admin ---------------------
+
 export const invoices = async (req, res) => {
   try {
-    const user = req.user;
-    const { email, role } = user;
+    const { email, role } = req.user;
+    let query = {};
 
-    let invoices = [];
     if (role === "root") {
-      // For root, fetch all invoices
-      invoices = await Invoice.find();
-    } else if (role === "admin") { 
-      // For admin, find all users created by this admin
-      const subUsers = await User.find({ createdBy: email });
-      
-      // Normalize emails to lowercase
-      const subUserEmails = subUsers.map((u) => u.email.toLowerCase());
-    
-      // Fetch invoices for those sub-users, converting invoice email to lowercase if needed
-      invoices = await Invoice.find({
-        email: { $in: subUserEmails.map(e => e.toLowerCase()) }
-      });      
-    }
-     else {
-      // For regular users, fetch invoices associated with their email
-      invoices = await Invoice.find({ email });
+      // Root can access all invoices
+      query = {};
+    } else if (role === "admin") {
+      // Admin can access invoices of users they created
+      const subUsers = await User.find({ createdBy: email }).select("email");
+      const subUserEmails = subUsers.map((user) => user.email.toLowerCase());
+      query = { email: { $in: subUserEmails } };
+    } else {
+      // Regular users can access only their invoices
+      query = { email: email.toLowerCase() };
     }
 
-    if (!invoices || invoices.length === 0) {
+    const invoices = await Invoice.find(query);
+
+    if (!invoices.length) {
       return res.status(404).json({ msg: "No invoices found" });
     }
 
-    res.status(200).json({ invoices, user });
+    res.status(200).json({ invoices, user: req.user });
   } catch (error) {
     console.error("Error fetching invoices:", error);
     res.status(500).json({ msg: "Internal Server Error", error: error.message });
   }
 };
+
 // ---------------------- Invoice Delete API for user or Admin -----------------------------
 
 export const deleteInvoice = async (req, res) => {
@@ -901,29 +898,86 @@ res.json({ message: "OTP verified successfully" });
 };
 
  
-
 export const resetPassword = async (req, res) => {
   const { email, password } = req.body;
-
-  try {
-    // Find the user by email
-    const user = await User.findOne({ email });
+  
+  try {    
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required" });
+    }
+    const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-
-    // Hash the new password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-
-    // Update the user's password and save
     user.password = hashedPassword;
-    await user.save();
+    console.log(user)
+    await user.save(); 
+    console.log("abc")
+
 
     return res.status(200).json({ message: "Password reset successfully" });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ message: "Error resetting password", error: error.message });
+    console.error("Error resetting password:", error);
+    return res.status(500).json({ message: "Error resetting password", error: error.message });
   }
+};
+
+
+export const addUserOtp = async (req, res) => {
+  const { email } = req.body;
+
+  if (!email)
+    return res.status(400).json({ message: "Email is required" });
+
+  // Check if the user is already added
+  const user = await User.findOne({ email });
+  if (user) {
+    return res.status(409).json({ message: "This email is already added" });
+  }
+
+  try {
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    // Store OTP with an expiration time (5 minutes)
+    addUserOtpStorage[email] = { otp, expiresAt: Date.now() + 5 * 60 * 1000 };
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Your OTP Code",
+      text: `Your OTP is ${otp}. It is valid for 5 minutes.`,
+    };
+
+    await transporter.sendMail(mailOptions);
+    res.json({ message: "OTP sent successfully" });
+  } catch (error) {
+    console.error("Error sending OTP email:", error);
+    res.status(500).json({ message: "Error sending OTP", error: error.message });
+  }
+};
+
+
+
+export const addUserVerifyOtp = async (req, res) => {
+ 
+const { email, otp } = req.body;
+if (!email || !otp) {
+  return res.status(400).json({ message: "Email and OTP are required" });
+}
+const otpString = Array.isArray(otp) ? otp.join("") : otp;
+const addUserStoredOtp = addUserOtpStorage[email];
+if (!addUserStoredOtp) {
+  return res.status(400).json({ message: "No OTP found for this email" });
+}
+if (Date.now() > addUserStoredOtp.expiresAt) {
+  return res.status(400).json({ message: "OTP expired" });
+}
+if (addUserStoredOtp.otp !== otpString) {
+  return res.status(400).json({ message: "Invalid OTP" });
+}
+
+// OTP is valid, remove it from storage
+delete addUserOtpStorage[email];
+res.json({ message: "OTP verified successfully" });
 };

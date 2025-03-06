@@ -28,7 +28,7 @@ const Users = () => {
       if (!token) throw new Error("No authentication token found");
   
       const headers = { Authorization: `Bearer ${token}` };
-      const response = await axios.get("https://aimps-server.vercel.app/api/users", { headers });
+      const response = await axios.get("https://aimps-server.vercel.app/api/user/all", { headers });
   
       const userList = response.data.users || [];
       setUsers(userList);
@@ -59,7 +59,7 @@ const Users = () => {
       if (!token) throw new Error("No authentication token found");
 
       const headers = { Authorization: `Bearer ${token}` };
-      await axios.delete(`https://aimps-server.vercel.app/api/deleteuser/${id}`, { headers });
+      await axios.delete(`https://aimps-server.vercel.app/api/user/delete/${id}`, { headers });
 
       setUsers((prevUsers) => prevUsers.filter((user) => user._id !== id));
     } catch (error) {

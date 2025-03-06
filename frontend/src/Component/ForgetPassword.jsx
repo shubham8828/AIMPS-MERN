@@ -20,16 +20,14 @@ const ForgetPassword = () => {
       setError("Enter a valid email address!");
     } else {
       setError("");
-      const newUser=false;
-      axios.post('https://aimps-server.vercel.app/api/send-otp',{email,newUser})
+      axios.post('https://aimps-server.vercel.app/api/send-otp',{email})
       .then(()=>{
         toast.success("OTP sent successfully",{position:'top-center'});
-        const data=email;
-        navigate("/otp-verification", { state: { data }, replace: true });
+        navigate("/otp-verification", { state: { email }, replace: true });
       })
       .catch((err)=>{
         toast.error("Email does not exist!",{position:'top-center'});
-        navigate('/register',{replace:true})
+        navigate('/login',{replace:true})
 
       })
     }

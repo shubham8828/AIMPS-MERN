@@ -32,7 +32,7 @@ const ResetPassword = () => {
       navigate("/login", { replace: true });
 
     })
-    .catch((err)=>{
+    .catch(()=>{
       toast.error("Failed to resete password Try again!",{position:'top-center'})
     })
   };

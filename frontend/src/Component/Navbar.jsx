@@ -45,7 +45,7 @@ const Navbar = ({ setToken }) => {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       };
-      const response = await axios.get("https://aimps-server.vercel.app/api/user", {
+      const response = await axios.get("https://aimps-server.vercel.app/api/user/current", {
         headers,
       });
       if (response.status === 404) {
@@ -201,9 +201,10 @@ const Navbar = ({ setToken }) => {
                     <NavLink to="/profile" onClick={() => setMenuOpen(false)}>
                       <CgProfile /> Profile
                     </NavLink>
-                    <NavLink to="/setting" onClick={() => setMenuOpen(false)}>
+                    {/* <NavLink to="/setting" onClick={() => setMenuOpen(false)}>
                       <FaCog /> Setting
-                    </NavLink>
+                    </NavLink> */}
+                    
                     <button onClick={logOut} className="logout-button">
                       <RiLogoutBoxRLine /> Logout
                     </button>
