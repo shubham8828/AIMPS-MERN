@@ -402,6 +402,7 @@ export const invoices = async (req, res) => {
 };
 
 // ---------------------- Invoice Delete API for user or Admin -----------------------------
+
 export const deleteInvoice = async (req, res) => {
   try {
     const { id } = req.params; // Extract the invoice ID from URL parameters
@@ -411,7 +412,7 @@ export const deleteInvoice = async (req, res) => {
       return res.status(400).json({ message: "Invalid request: Invoice ID is required" });
     }
 
-    // Step 1: Find and delete the invoice by ID (Pass `id` directly)
+    // Step 1: Find and delete the invoice by ID
     const deletedInvoice = await Invoice.findByIdAndDelete(id);
     if (!deletedInvoice) {
       return res.status(404).json({ message: "Invoice not found" });
@@ -419,6 +420,7 @@ export const deleteInvoice = async (req, res) => {
 
     // Step 2: Find and delete the associated payment by invoice ID
     const deletedPayment = await Payment.findOneAndDelete({ invoiceId: deletedInvoice.invoiceId });
+   
 
     // Return success response
     return res.status(200).json({
@@ -427,7 +429,6 @@ export const deleteInvoice = async (req, res) => {
       deletedPayment,
     });
   } catch (error) {
-    console.error("Error deleting invoice:", error);
 
     // Return a detailed error response
     return res.status(500).json({
