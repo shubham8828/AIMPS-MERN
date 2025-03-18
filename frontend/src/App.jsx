@@ -1,5 +1,5 @@
 import React, { useEffect, useState, Suspense } from "react";
-import { BrowserRouter, Route, Routes,useNavigate } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import axios from "axios";
 import ForgetPassword from "./Component/ForgetPassword.jsx";
 import OtpVerification from "./Component/OtpVerification.jsx";
@@ -32,7 +32,6 @@ const EditUser = React.lazy(() => import("./Pages/EditUser.jsx"));
 const App = () => {
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [isAdmin, setIsAdmin] = useState(false);
-  const navigate=useNavigate();
 
   // Update token in localStorage when changed
   useEffect(() => {
@@ -43,9 +42,7 @@ const App = () => {
     }
   }, [token]);
 
-  useEffect(() => {
-    navigate('/',{replace:true})
-    
+  useEffect(() => {    
     if (token) {
       axios
         .get("https://aimps-server.vercel.app/api/user/current", {
