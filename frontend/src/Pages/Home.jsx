@@ -12,7 +12,7 @@ import Spinner from "../Component/Spinner.jsx";
 import { FaCloudDownloadAlt } from "react-icons/fa";
 
 const Home = () => {
-  const [isAdmin, setIsAdmin] = useState(false); // Start with `null` instead of an empty object
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -23,10 +23,10 @@ const Home = () => {
     };
 
     axios
-      .get("https://aimps-server.vercel.app/api/user/current", { headers })
+      .get("http://localhost:4000/api/user/current", { headers })
       .then((response) => {
         const { user } = response.data;
-        if (user.role === "root" || user.role === "admin") {
+        if (user.role === "admin") {
           setIsAdmin(true);
         }
         setLoading(false);

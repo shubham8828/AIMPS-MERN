@@ -5,8 +5,8 @@ import bcrypt from "bcrypt"; // To hash the password
 import cloudinary from "../cloudinary.js";
 import Payment from "../model/payment.js";
 import jwt from "jsonwebtoken";
-import nodemailer from 'nodemailer';
-import dotenv from 'dotenv';
+import nodemailer from "nodemailer";
+import dotenv from "dotenv";
 
 dotenv.config();
 
@@ -20,49 +20,26 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-
 // ---------------------- Register API --------------------------
+
 export const AddUser = async (req, res) => {
   try {
+    const { email, name, password, phone, role } = req.body;
+    const adminEmail = req.user.email;
 
-    const { email, name, address, password, image, phone, shopname} = req.body;
-    const user=req.user;
-    const createdBy = user.email;
-    const role=user.role==='root'?'admin':'user';
-
-    // Check if the user already exists
+    const admin = await User.findOne({ email: adminEmail });
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ msg: "Email is already registered" });
     }
 
     const formattedAddress = {
-      localArea: address.localArea.trim(),
-      city: address.city.trim(),
-      state: address.state.trim(),
-      country: address.country.trim(),
-      pin: address.pin.trim(),
+      localArea: admin.address.localArea.trim(),
+      city: admin.address.city.trim(),
+      state: admin.address.state.trim(),
+      country: admin.address.country.trim(),
+      pin: admin.address.pin.trim(),
     };
-
-    // Optional image upload
-    let imageUrl = "";
-    if (image) {
-      try {
-        const uploadResult = await cloudinary.uploader.upload(image, {
-          upload_preset: "eeeghag0",
-          public_id: `${email}_avatar`,
-          allowed_formats: ["png", "jpg", "jpeg", "svg"],
-        });
-        imageUrl = uploadResult.secure_url || "";
-      } catch (uploadError) {
-        console.error("Image upload failed:", uploadError);
-        return res.status(500).json({
-          msg: "Image upload failed. Please try again later.",
-        });
-      }
-    } else {
-      return res.status(404).json({ msg: "Image not found" });
-    }
 
     // Hash password before saving
     const salt = await bcrypt.genSalt(10);
@@ -73,20 +50,19 @@ export const AddUser = async (req, res) => {
       name,
       phone,
       address: formattedAddress,
-      shopname: shopname || "AIMPS",
+      shopname: admin.shopname || "",
       password: hashedPassword,
-      image: imageUrl,
-      createdBy,
+      image: admin.image,
+      createdBy: admin.email,
       role,
     });
 
     await newUser.save();
-    res.status(200).json({msg: "User Added successfully"});
+    res.status(200).json({ msg: "User Added successfully" });
   } catch (err) {
     res.status(500).json({ msg: "Internal Server Error" });
   }
 };
-
 
 // -------------------- LOGIN API ----------------------------
 
@@ -121,7 +97,7 @@ export const login = async (req, res) => {
     };
 
     const token = jwt.sign(payload, process.env.JWT_SECRET, {
-      expiresIn: "30d", // Set the expiration time
+      expiresIn: "24h", // Set the expiration time
     });
 
     // Return a success response with the token and user data
@@ -145,92 +121,118 @@ export const login = async (req, res) => {
   }
 };
 
-
 // -------------------------------- Update API For User -----------------------------
-
 
 export const update = async (req, res) => {
   try {
-  
-    const { email, name, address, image, phone, shopname,role} = req.body;
+    const { email, name, address, image, phone, shopname, role } = req.body;
+
     if (!email) {
-      return res.status(400).json({ msg: "Email is required to update user details" });
+      return res
+        .status(400)
+        .json({ msg: "Email is required to update user details" });
     }
 
-    // Find the user by email 
+    // Find the user by email
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ msg: "User not found" });
     }
 
-    // Update user fields
-    if (name) user.name = name;
-    if (phone) user.phone = phone; 
-    if (shopname) user.shopname = shopname;
-    if (role) user.role = role;
+    let updateData = {};
 
-    // Update address if provided
+    // Admin updates (but should not change other users)
+    if (name) updateData.name = name;
+    if (phone) updateData.phone = phone;
+    if (role) updateData.role = role;
+
+    // Update shopname for admin and associated users
+    if (user.role === "admin" && shopname && shopname !== user.shopname) {
+      updateData.shopname = shopname;
+      await User.updateMany({ createdBy: email }, { $set: { shopname } });
+    }
+
+    // Handle address update
     if (address && typeof address === "object") {
-      const { city, state, pin, localArea, country } = address;
-      if (!user.address) user.address = {}; // Ensure the address object exists
-      if (city) user.address.city = city;
-      if (state) user.address.state = state;
-      if (pin) user.address.pin = pin;
-      if (country) user.address.country = country;
-      if (localArea) user.address.localArea = localArea;
+      updateData.address = { ...user.address, ...address }; // Merge new values into existing address
     }
 
-    // Handle image upload/update
-    if (image) {
-      if (typeof image !== "string") {
-        return res.status(400).json({ msg: "Invalid image format" });
-      }
-
-      const isAlreadyUploaded = image.startsWith("http");
-
-      if (!isAlreadyUploaded) {
-        try {
-          const uploadResult = await cloudinary.uploader.upload(image, {
-            upload_preset: "eeeghag0",
-            public_id: `${email}_avatar`,
-            overwrite: true,
-            allowed_formats: ["png", "jpg", "jpeg", "svg"],
-          });
-
-          if (!uploadResult || !uploadResult.secure_url) {
-            return res.status(500).json({ msg: "Image upload failed" });
-          }
-
-          user.image = uploadResult.secure_url;
-        } catch (cloudError) {
-          console.error("Cloudinary upload error:", cloudError);
-          return res.status(500).json({ msg: "Error uploading image to Cloudinary" });
+    // Upload image if provided
+    if (image && typeof image === "string" && !image.startsWith("http")) {
+      try {
+        const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB limit
+        if (image.length > MAX_IMAGE_SIZE) {
+          return res.status(400).json({ msg: "Image size exceeds 5MB limit" });
         }
-      } else {
-        user.image = image;
+        const uploadResult = await cloudinary.uploader.upload(image, {
+          upload_preset: "eeeghag0",
+          public_id: `${email}_avatar`,
+          overwrite: true,
+          allowed_formats: ["png", "jpg", "jpeg", "svg"],
+        });
+
+        if (!uploadResult?.secure_url) {
+          return res.status(500).json({ msg: "Image upload failed" });
+        }
+
+        updateData.image = uploadResult.secure_url;
+      } catch (cloudError) {
+        console.error("Cloudinary upload error:", cloudError);
+        return res
+          .status(500)
+          .json({ msg: "Error uploading image to Cloudinary" });
+      }
+    } else if (image) {
+      updateData.image = image;
+    }
+
+    // If admin updates their image or address, update all created users
+    const updatePromises = [];
+    if (user.role === "admin") {
+      if (updateData.image && updateData.image !== user.image) {
+        updatePromises.push(
+          User.updateMany(
+            { createdBy: email },
+            { $set: { image: updateData.image } }
+          )
+        );
+      }
+      if (updateData.address) {
+        updatePromises.push(
+          User.updateMany(
+            { createdBy: email },
+            { $set: { address: updateData.address } }
+          )
+        );
       }
     }
 
-    // Save the updated user data
-    await user.save();
+    // Apply updates
+    updatePromises.push(User.updateOne({ email }, { $set: updateData }));
+    await Promise.all(updatePromises);
 
-    // Return success response
-    return res.status(200).json({ msg: "User updated successfully", user });
+    // Fetch updated user details
+    const updatedUser = await User.findOne({ email });
+
+    return res
+      .status(200)
+      .json({ msg: "User updated successfully", user: updatedUser });
   } catch (error) {
     console.error("Error in update API:", error.message);
-
-    // Return a generic error response
-    return res.status(500).json({ msg: "Internal Server Error. Please try again later." });
+    return res
+      .status(500)
+      .json({ msg: "Internal Server Error. Please try again later." });
   }
 };
-
 
 // ---------------- Get Current User API ----------------------------
 
 export const getUser = async (req, res) => {
   try {
-    if (!req.user || !req.user.email) {
-      return res.status(400).json({ msg: "Invalid request: User information is missing" });
+    if (!req.user) {
+      return res
+        .status(400)
+        .json({ msg: "Invalid request: User information is missing" });
     }
 
     const email = req.user.email;
@@ -240,11 +242,12 @@ export const getUser = async (req, res) => {
 
     if (user) {
       // Respond with the user data, excluding sensitive fields like password
-      return res.status(200).json({ 
+      return res.status(200).json({
         user: {
           id: user._id,
           email: user.email,
           name: user.name,
+          shopname: user.shopname,
           phone: user.phone,
           address: user.address,
           image: user.image,
@@ -259,30 +262,30 @@ export const getUser = async (req, res) => {
     console.error("Error in getUser API:", error.message);
 
     // Respond with a generic error message
-    return res.status(500).json({ msg: "Internal Server Error. Please try again later." });
+    return res
+      .status(500)
+      .json({ msg: "Internal Server Error. Please try again later." });
   }
 };
-
 
 // ------------------------ Get All Users API For Admin ----------------------
 
 export const getUsers = async (req, res) => {
   try {
-
-
-      const users = await User.find();
-      const user=req.user;
+    const users = await User.find();
+    const user = req.user;
 
     if (!users.length) {
       return res.status(404).json({ message: "No users found" });
     }
 
-    return res.status(200).json({ users, user});
+    return res.status(200).json({ users, user });
   } catch (error) {
-    return res.status(500).json({ message: "Internal server error", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 };
-
 
 // --------------------- Delete User API for Admin or Root -------------------------------
 
@@ -291,7 +294,9 @@ export const deleteUser = async (req, res) => {
 
   try {
     if (!id) {
-      return res.status(400).json({ message: "Invalid request: User ID is required" });
+      return res
+        .status(400)
+        .json({ message: "Invalid request: User ID is required" });
     }
 
     // Step 1: Find and delete the user by ID
@@ -303,7 +308,7 @@ export const deleteUser = async (req, res) => {
 
     // Step 2: Find all invoices created by the deleted user's email
     const invoices = await Invoice.find({ email });
-    const invoiceIds = invoices.map(invoice => invoice.invoiceId); // Collect all invoice IDs
+    const invoiceIds = invoices.map((invoice) => invoice.invoiceId); // Collect all invoice IDs
 
     // Step 3: Delete all payments associated with the invoice IDs
     if (invoiceIds.length > 0) {
@@ -338,31 +343,24 @@ export const deleteUser = async (req, res) => {
   }
 };
 
-
-
-
-
-
-
 // --------------------------- Create New Invoice or Bill -----------------------------------
 
 export const newInvoive = async (req, res) => {
   try {
-    const { to, phone, address, products, total} = req.body;
-    const email=req.user.email;
+    const { to, phone, address, products, total } = req.body;
+    const email = req.user.email;
     const newInvoice = new Invoice({
       to,
       phone,
       address,
-      products, 
+      products,
       total,
-      email
+      email,
     });
     await newInvoice.save();
     res
       .status(200)
       .json({ msg: "Invoice created successfully", invoice: newInvoice });
-
   } catch (error) {
     return res.status(500).json({ msg: "Internal Server Error" });
   }
@@ -375,16 +373,9 @@ export const invoices = async (req, res) => {
     const { email, role } = req.user;
     let query = {};
 
-    if (role === "root") {
-      // Root can access all invoices
+    if (role === "admin") {
       query = {};
-    } else if (role === "admin") {
-      // Admin can access invoices of users they created
-      const subUsers = await User.find({ createdBy: email }).select("email");
-      const subUserEmails = subUsers.map((user) => user.email.toLowerCase());
-      query = { email: { $in: subUserEmails } };
     } else {
-      // Regular users can access only their invoices
       query = { email: email.toLowerCase() };
     }
 
@@ -397,7 +388,9 @@ export const invoices = async (req, res) => {
     res.status(200).json({ invoices, user: req.user });
   } catch (error) {
     console.error("Error fetching invoices:", error);
-    res.status(500).json({ msg: "Internal Server Error", error: error.message });
+    res
+      .status(500)
+      .json({ msg: "Internal Server Error", error: error.message });
   }
 };
 
@@ -409,7 +402,9 @@ export const deleteInvoice = async (req, res) => {
 
     // Validate the presence of the ID
     if (!id) {
-      return res.status(400).json({ message: "Invalid request: Invoice ID is required" });
+      return res
+        .status(400)
+        .json({ message: "Invalid request: Invoice ID is required" });
     }
 
     // Step 1: Find and delete the invoice by ID
@@ -419,8 +414,9 @@ export const deleteInvoice = async (req, res) => {
     }
 
     // Step 2: Find and delete the associated payment by invoice ID
-    const deletedPayment = await Payment.findOneAndDelete({ invoiceId: deletedInvoice.invoiceId });
-   
+    const deletedPayment = await Payment.findOneAndDelete({
+      invoiceId: deletedInvoice.invoiceId,
+    });
 
     // Return success response
     return res.status(200).json({
@@ -429,7 +425,6 @@ export const deleteInvoice = async (req, res) => {
       deletedPayment,
     });
   } catch (error) {
-
     // Return a detailed error response
     return res.status(500).json({
       message: "Internal Server Error",
@@ -437,7 +432,6 @@ export const deleteInvoice = async (req, res) => {
     });
   }
 };
-
 
 // Update the invoice
 
@@ -447,31 +441,25 @@ export const updateInvoice = async (req, res) => {
   try {
     const updatedInvoice = await Invoice.findByIdAndUpdate(
       id,
-      updatedInvoiceData, 
-      { new: true } 
+      updatedInvoiceData,
+      { new: true }
     );
 
     if (!updatedInvoice) {
       return res.status(404).json({ message: "Invoice not found" });
     }
 
-    res
-      .status(200)
-      .json({
-        message: "Invoice updated successfully",
-        invoice: updatedInvoice,
-      });
+    res.status(200).json({
+      message: "Invoice updated successfully",
+      invoice: updatedInvoice,
+    });
   } catch (error) {
     console.error("Error updating invoice:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
-
-
-
 // ---------------------------------- Search Customer By Name --------------------------------------
-
 
 export const searchCustomer = async (req, res) => {
   try {
@@ -481,7 +469,7 @@ export const searchCustomer = async (req, res) => {
     if (!email) {
       return res.status(400).json({ msg: "User email is required" });
     }
-    let filter = role === "user" ? { email } : {}; 
+    let filter = role === "user" ? { email } : {};
     const invoices = await Invoice.find(filter);
 
     return res.status(200).json({ invoices });
@@ -493,8 +481,6 @@ export const searchCustomer = async (req, res) => {
     });
   }
 };
-
-
 
 //------------------------------- Save Payment Data API ------------------------------
 
@@ -583,28 +569,23 @@ export const getUserPayments = async (req, res) => {
     let payments = [];
     let invoices = [];
 
-    if (role === "root" ) {
-      invoices = await Invoice.find(); 
-    } else if (role === "admin") {
-      const usersCreated = await User.find({ createdBy: email });
-      const userEmails = usersCreated.map(user => user.email);
-      invoices = await Invoice.find({ email: {$in:userEmails}});
-    }
-    else if (role === "user") {
-      invoices = await Invoice.find({ email }); 
+    if (role === "admin") {
+      invoices = await Invoice.find();
+    } else if (role === "user") {
+      invoices = await Invoice.find({ email });
     }
 
     if (invoices.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No invoices found. " });
+      return res.status(404).json({ message: "No invoices found. " });
     }
 
     // Fetch all payments matching the user's invoice IDs.
     const invoiceIds = invoices.map((invoice) => invoice.invoiceId);
     payments = await Payment.find({ invoiceId: { $in: invoiceIds } });
 
-    const paymentMap = new Map(payments.map((payment) => [payment.invoiceId, payment]));
+    const paymentMap = new Map(
+      payments.map((payment) => [payment.invoiceId, payment])
+    );
 
     // Combine invoice and payment data for both users (admin/root or user).
     combinedData = invoices.map((invoice) => {
@@ -646,28 +627,25 @@ export const getUserPayments = async (req, res) => {
   }
 };
 
-
-
 // ------------------ Find Invoice By Invoice ID ----------------
 export const getInvoice = async (req, res) => {
   try {
-    const { invoiceId } = req.body; 
+    const { invoiceId } = req.body;
 
     if (!invoiceId) {
       return res.status(400).json({ message: "Invoice ID is required" });
     }
 
-    const invoice = await Invoice.findOne({invoiceId });
-    const user=await User.findOne({email:invoice.email})
-    const payment=await Payment.findOne({invoiceId:invoice.invoiceId})
+    const invoice = await Invoice.findOne({ invoiceId });
+    const user = await User.findOne({ email: invoice.email });
+    const payment = await Payment.findOne({ invoiceId: invoice.invoiceId });
 
     if (!invoice) {
       return res.status(404).json({ message: "Invoice not found" });
     }
 
-    return res.status(200).json({ invoice,user,payment });
+    return res.status(200).json({ invoice, user, payment });
   } catch (error) {
-
     return res.status(500).json({
       message: "Server error",
       error: error.message || "Unknown error",
@@ -691,7 +669,11 @@ export const getPaymentData = async (req, res) => {
 
     // If no payment is found, return 404 status with a message
     if (!payment) {
-      return res.status(404).json({ message: "Payment data not found for the provided invoice ID" });
+      return res
+        .status(404)
+        .json({
+          message: "Payment data not found for the provided invoice ID",
+        });
     }
 
     // Return the found payment data
@@ -705,7 +687,6 @@ export const getPaymentData = async (req, res) => {
     });
   }
 };
-
 
 // --------------------------- Get all messages of one conversation---------------------
 
@@ -731,19 +712,19 @@ export const getMessages = async (req, res) => {
       return res.status(200).json({ conversation });
     } else {
       // Find the root admin user
-      const root = await User.findOne({ role: "root" });
+      const admin = await User.findOne({ role: "admin" });
 
       // Logic for creating a new conversation
       let newConversation;
 
-      if (root && root.email === receiver) {
+      if (admin && admin.email === receiver) {
         // Create a conversation with a welcome message for root admin
         newConversation = {
           sender: sender,
           receiver: receiver,
           message: [
             {
-              sender: root.email,
+              sender: admin.email,
               msg: "Welcome to AIMPS!",
               createdAt: new Date(),
             },
@@ -770,49 +751,47 @@ export const getMessages = async (req, res) => {
   }
 };
 
-
 // -------------------- Customer Support API -------------------------
 
 export const newMessages = async (req, res) => {
   try {
     const { sender, receiver, message } = req.body;
-    console.log(message)
-    // Check if any required field is missing
-    if (!sender || !receiver ) {
-      return res.status(400).json({ error: "Missing Sender, Receiver, or Message" });
+    if (!sender || !receiver) {
+      return res
+        .status(400)
+        .json({ error: "Missing Sender, Receiver, or Message" });
     }
 
     // Find an existing conversation between sender and receiver
     let conversation = await Message.findOne({
       $or: [
         { sender: sender, receiver: receiver },
-        { sender: receiver, receiver: sender }
-      ]
+        { sender: receiver, receiver: sender },
+      ],
     });
-
 
     // If conversation exists, add the new message to the conversation's message array
     if (conversation) {
       const currentTime = new Date(); // Create a valid Date object
 
       // Add each message to the conversation
-      if(message.length === 0 ){
-          return res.status(500).json({error:" Message Cant Empty"})
-      }else{
-
-      
-      message.forEach(msg => {
-        conversation.message.push({
-          msg: msg.msg,
-          createdAt: currentTime, // Store a Date object
-          sender: msg.sender
+      if (message.length === 0) {
+        return res.status(500).json({ error: " Message Cant Empty" });
+      } else {
+        message.forEach((msg) => {
+          conversation.message.push({
+            msg: msg.msg,
+            createdAt: currentTime, // Store a Date object
+            sender: msg.sender,
+          });
         });
-      });
-    }
+      }
 
       // Save the updated conversation
       await conversation.save();
-      return res.status(200).json({ message: 'Message(s) added to existing conversation' });
+      return res
+        .status(200)
+        .json({ message: "Message(s) added to existing conversation" });
     } else {
       // If no conversation exists, create a new conversation
       const currentTime = new Date(); // Create a valid Date object
@@ -820,38 +799,39 @@ export const newMessages = async (req, res) => {
       const newConversation = new Message({
         sender,
         receiver,
-        message: message.map(msg => ({
+        message: message.map((msg) => ({
           msg: msg.msg,
           createdAt: currentTime, // Store a Date object
-          sender: msg.sender
-        }))
+          sender: msg.sender,
+        })),
       });
 
       // Save the new conversation
       await newConversation.save();
-      return res.status(201).json({ message: 'New conversation created and message(s) added' });
+      return res
+        .status(201)
+        .json({ message: "New conversation created and message(s) added" });
     }
   } catch (error) {
-    return res.status(500).json({ error: 'Error adding message', details: error.message });
+    return res
+      .status(500)
+      .json({ error: "Error adding message", details: error.message });
   }
 };
 
-
 export const sendOtp = async (req, res) => {
-  const { email,newUser} = req.body;
-  console.log(req.body)
+  const { email, newUser } = req.body;
+  console.log(req.body);
 
-   if (!email ) return res.status(400).json({ message: "Email is required" });
+  if (!email) return res.status(400).json({ message: "Email is required" });
 
-   if(!newUser){
-
+  if (!newUser) {
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ message: "User Not Found" });
     }
+  }
 
-   }
-  
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
   // Store OTP with an expiration time (5 minutes)
   otpStorage[email] = { otp, expiresAt: Date.now() + 5 * 60 * 1000 };
@@ -868,41 +848,43 @@ export const sendOtp = async (req, res) => {
     res.json({ message: "OTP sent successfully" });
   } catch (error) {
     console.error("Error sending OTP email:", error);
-    res.status(500).json({ message: "Error sending OTP", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error sending OTP", error: error.message });
   }
 };
 
 export const verifyOtp = async (req, res) => {
- 
-const { email, otp } = req.body;
-console.log(req.body)
-if (!email || !otp) {
-  return res.status(400).json({ message: "Email and OTP are required" });
-}
-const otpString = Array.isArray(otp) ? otp.join("") : otp;
-const storedOtp = otpStorage[email];
-if (!storedOtp) {
-  return res.status(400).json({ message: "No OTP found for this email" });
-}
-if (Date.now() > storedOtp.expiresAt) {
-  return res.status(400).json({ message: "OTP expired" });
-}
-if (storedOtp.otp !== otpString) {
-  return res.status(400).json({ message: "Invalid OTP" });
-}
+  const { email, otp } = req.body;
+  console.log(req.body);
+  if (!email || !otp) {
+    return res.status(400).json({ message: "Email and OTP are required" });
+  }
+  const otpString = Array.isArray(otp) ? otp.join("") : otp;
+  const storedOtp = otpStorage[email];
+  if (!storedOtp) {
+    return res.status(400).json({ message: "No OTP found for this email" });
+  }
+  if (Date.now() > storedOtp.expiresAt) {
+    return res.status(400).json({ message: "OTP expired" });
+  }
+  if (storedOtp.otp !== otpString) {
+    return res.status(400).json({ message: "Invalid OTP" });
+  }
 
-// OTP is valid, remove it from storage
-delete otpStorage[email];
-res.json({ message: "OTP verified successfully" });
+  // OTP is valid, remove it from storage
+  delete otpStorage[email];
+  res.json({ message: "OTP verified successfully" });
 };
 
- 
 export const resetPassword = async (req, res) => {
   const { email, password } = req.body;
-  
-  try {    
+
+  try {
     if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required" });
+      return res
+        .status(400)
+        .json({ message: "Email and password are required" });
     }
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
@@ -911,24 +893,23 @@ export const resetPassword = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
     user.password = hashedPassword;
-    console.log(user)
-    await user.save(); 
-    console.log("abc")
-
+    console.log(user);
+    await user.save();
+    console.log("abc");
 
     return res.status(200).json({ message: "Password reset successfully" });
   } catch (error) {
     console.error("Error resetting password:", error);
-    return res.status(500).json({ message: "Error resetting password", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Error resetting password", error: error.message });
   }
 };
-
 
 export const addUserOtp = async (req, res) => {
   const { email } = req.body;
 
-  if (!email)
-    return res.status(400).json({ message: "Email is required" });
+  if (!email) return res.status(400).json({ message: "Email is required" });
 
   // Check if the user is already added
   const user = await User.findOne({ email });
@@ -952,31 +933,30 @@ export const addUserOtp = async (req, res) => {
     res.json({ message: "OTP sent successfully" });
   } catch (error) {
     console.error("Error sending OTP email:", error);
-    res.status(500).json({ message: "Error sending OTP", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error sending OTP", error: error.message });
   }
 };
 
-
-
 export const addUserVerifyOtp = async (req, res) => {
- 
-const { email, otp } = req.body;
-if (!email || !otp) {
-  return res.status(400).json({ message: "Email and OTP are required" });
-}
-const otpString = Array.isArray(otp) ? otp.join("") : otp;
-const addUserStoredOtp = addUserOtpStorage[email];
-if (!addUserStoredOtp) {
-  return res.status(400).json({ message: "No OTP found for this email" });
-}
-if (Date.now() > addUserStoredOtp.expiresAt) {
-  return res.status(400).json({ message: "OTP expired" });
-}
-if (addUserStoredOtp.otp !== otpString) {
-  return res.status(400).json({ message: "Invalid OTP" });
-}
+  const { email, otp } = req.body;
+  if (!email || !otp) {
+    return res.status(400).json({ message: "Email and OTP are required" });
+  }
+  const otpString = Array.isArray(otp) ? otp.join("") : otp;
+  const addUserStoredOtp = addUserOtpStorage[email];
+  if (!addUserStoredOtp) {
+    return res.status(400).json({ message: "No OTP found for this email" });
+  }
+  if (Date.now() > addUserStoredOtp.expiresAt) {
+    return res.status(400).json({ message: "OTP expired" });
+  }
+  if (addUserStoredOtp.otp !== otpString) {
+    return res.status(400).json({ message: "Invalid OTP" });
+  }
 
-// OTP is valid, remove it from storage
-delete addUserOtpStorage[email];
-res.json({ message: "OTP verified successfully" });
+  // OTP is valid, remove it from storage
+  delete addUserOtpStorage[email];
+  res.json({ message: "OTP verified successfully" });
 };

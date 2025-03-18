@@ -287,7 +287,7 @@ const Charts = () => {
       try {
         const token = localStorage.getItem("token");
         const headers = { Authorization: `Bearer ${token}` };
-        const response = await axios.get("https://aimps-server.vercel.app/api/invoice/all", {
+        const response = await axios.get("http://localhost:4000/api/invoice/all", {
           headers,
         });
         const monthlyData = calculateMonthlyData(response.data.invoices);

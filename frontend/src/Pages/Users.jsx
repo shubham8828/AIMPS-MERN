@@ -11,8 +11,6 @@ const Users = () => {
   const [currUser, setCurrUser] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRole, setSelectedRole] = useState("");
-  const [selectedCreator, setSelectedCreator] = useState("");
-  const [creators, setCreators] = useState([]); // List of unique creators (e.g., emails)
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
@@ -28,21 +26,12 @@ const Users = () => {
       if (!token) throw new Error("No authentication token found");
   
       const headers = { Authorization: `Bearer ${token}` };
-      const response = await axios.get("https://aimps-server.vercel.app/api/user/all", { headers });
+      const response = await axios.get("http://localhost:4000/api/user/all", { headers });
   
       const userList = response.data.users || [];
       setUsers(userList);
       setCurrUser(response.data.user);
-  
-      // Extract unique creators (only for users created by admins or root)
-      const uniqueCreators = [
-        ...new Set(
-          userList
-            .map(user => user.createdBy)
-        ),
-      ];
-  
-      setCreators(uniqueCreators);
+
     } catch (error) {
       console.error("Error fetching users:", error);
     } finally {
@@ -50,16 +39,19 @@ const Users = () => {
     }
   };
   
-  const handleDelete = async (id) => {
+  const handleDelete = async (id,role) => {
     if (!window.confirm("Are you sure you want to delete this user?")) return;
-
+    if(role==='admin'){
+      alert("You Cant Delete Admin");
+      return;
+    }
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("No authentication token found");
 
       const headers = { Authorization: `Bearer ${token}` };
-      await axios.delete(`https://aimps-server.vercel.app/api/user/delete/${id}`, { headers });
+      await axios.delete(`http://localhost:4000/api/user/delete/${id}`, { headers });
 
       setUsers((prevUsers) => prevUsers.filter((user) => user._id !== id));
     } catch (error) {
@@ -71,17 +63,11 @@ const Users = () => {
   const filteredUsers = users.filter((user) => {
     // Exclude the current logged-in user
     if (user.email === currUser?.email) return false;
-  
-    // If the current user is an admin, only show users created by them
-    if (currUser?.role === "admin" && user.createdBy !== currUser.email) {
-      return false;
-    }
-  
+    
     // For everyone else, apply the standard filtering
     const query = searchQuery.toLowerCase().trim();
     return (
       (selectedRole === "" || user.role?.toLowerCase() === selectedRole.toLowerCase()) &&
-      (selectedCreator === "" || user.createdBy === selectedCreator) &&
       (
         user.name?.toLowerCase().includes(query) ||
         user.email?.toLowerCase().includes(query) ||
@@ -140,8 +126,6 @@ const Users = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
             className="users-search-bar"
           />
-          {currUser?.role === "root" && (
-            <>
               <select
                 className="users-filter"
                 value={selectedRole}
@@ -151,21 +135,7 @@ const Users = () => {
                 <option value="user">User</option>
                 <option value="admin">Admin</option>
               </select>
-              {/* Dynamic Created By Filter Dropdown */}
-              <select
-                className="users-filter"
-                value={selectedCreator}
-                onChange={(e) => setSelectedCreator(e.target.value)}
-              >
-                <option value="">All Creators</option>
-                {creators.map((creator, index) => (
-                  <option key={index} value={creator}>
-                    {creator}
-                  </option>
-                ))}
-              </select>
-            </>
-          )}
+              
         </div>
 
         {filteredUsers.length === 0 ? (
@@ -207,7 +177,7 @@ const Users = () => {
                       <button className="users-edit-btn" onClick={() => navigate("/user/edit", { state: user })}>
                         <FaEdit />
                       </button>
-                      <button className="users-delete-btn" onClick={() => handleDelete(user._id)}>
+                      <button className="users-delete-btn" onClick={() => handleDelete(user._id,user.role)}>
                         <FaTrashAlt />
                       </button>
                     </td>

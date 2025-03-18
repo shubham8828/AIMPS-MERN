@@ -30,7 +30,7 @@ const NewInvoices = () => {
     };
 
     axios
-      .get("https://aimps-server.vercel.app/api/user/search", { headers })
+      .get("http://localhost:4000/api/user/search", { headers })
       .then((response) => {
         setInvoice(response.data.invoices);
         console.log("Response:", response.data);
@@ -162,7 +162,7 @@ const NewInvoices = () => {
       };
       setLoading(true);
       const response = await axios.post(
-        "https://aimps-server.vercel.app/api/invoice/new",
+        "http://localhost:4000/api/invoice/new",
         formData,
         { headers }
       );

@@ -18,7 +18,7 @@ const PieChart = () => {
         const token = localStorage.getItem("token"); // Get token from local storage
         const headers = { Authorization: `Bearer ${token}` };
 
-        const response = await axios.get("https://aimps-server.vercel.app/api/users", {
+        const response = await axios.get("http://localhost:4000/api/user/all", {
           headers,
         });
 

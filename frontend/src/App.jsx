@@ -31,7 +31,6 @@ const EditUser = React.lazy(() => import("./Pages/EditUser.jsx"));
 const App = () => {
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [isAdmin, setIsAdmin] = useState(false);
-  const [isRoot, setIsRoot] = useState(false);
 
   // Update token in localStorage when changed
   useEffect(() => {
@@ -45,13 +44,12 @@ const App = () => {
   useEffect(() => {
     if (token) {
       axios
-        .get("https://aimps-server.vercel.app/api/user/current", {
+        .get("http://localhost:4000/api/user/current", {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((response) => {
           const { user } = response.data;
           setIsAdmin(user.role === "admin");
-          setIsRoot(user.role === "root");
         })
         .catch((error) => {
           console.error("Error fetching user role:", error);
@@ -63,13 +61,12 @@ const App = () => {
 
   const PrivateRoute = ({
     children,
-    allowedRoles = ["user", "admin", "root"],
+    allowedRoles = ["user", "admin"],
   }) => {
     if (!token) return <Navigate to="/" />;
 
     const userHasAccess =
-      (allowedRoles.includes("root") && isRoot) ||
-      (allowedRoles.includes("admin") && (isAdmin || isRoot)) ||
+      (allowedRoles.includes("admin") && (isAdmin)) ||
       allowedRoles.includes("user");
 
     return userHasAccess ? children : <Navigate to="/" />;
@@ -119,7 +116,7 @@ const App = () => {
             <Route
               path="/users"
               element={
-                <PrivateRoute allowedRoles={["admin", "root"]}>
+                <PrivateRoute allowedRoles={["admin"]}>
                   <Users />
                 </PrivateRoute>
               }
@@ -128,7 +125,7 @@ const App = () => {
             <Route
               path="/adduser"
               element={
-                <PrivateRoute allowedRoles={["root", "admin"]}>
+                <PrivateRoute allowedRoles={["admin"]}>
                   <AddUser />
                 </PrivateRoute>
               }
@@ -137,7 +134,7 @@ const App = () => {
             <Route
               path="/user/edit"
               element={
-                <PrivateRoute allowedRoles={["admin", "root"]}>
+                <PrivateRoute allowedRoles={["admin"]}>
                   <EditUser />
                 </PrivateRoute>
               }

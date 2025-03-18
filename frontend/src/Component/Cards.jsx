@@ -27,7 +27,7 @@ const Cards = ({ isAdmin }) => {
 
     // Fetch invoices data
     axios
-      .get("https://aimps-server.vercel.app/api/invoice/all", { headers })
+      .get("http://localhost:4000/api/invoice/all", { headers })
       .then((response) => {
         setInvoices(response.data.invoices);
 
@@ -59,7 +59,7 @@ const Cards = ({ isAdmin }) => {
 
     // Fetch users data
     axios
-      .get("https://aimps-server.vercel.app/api/user/all", { headers })
+      .get("http://localhost:4000/api/user/all", { headers })
       .then((response) => {
         setTotalUsers(response.data.users.length); // Total number of users
         const cities = new Set(response.data.users.map((user) => user.city)); // Unique cities

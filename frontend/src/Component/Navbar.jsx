@@ -45,7 +45,7 @@ const Navbar = ({ setToken }) => {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       };
-      const response = await axios.get("https://aimps-server.vercel.app/api/user/current", {
+      const response = await axios.get("http://localhost:4000/api/user/current", {
         headers,
       });
       if (response.status === 404) {
@@ -127,8 +127,6 @@ const Navbar = ({ setToken }) => {
 
           {user && (
             <>
-              {/* Invoice Dropdown (only show if user.role !== "root") */}
-              {user.role !== "root" && (
                 <div
                   className="dropdown"
                   onClick={() => setInvoiceDropdown(!invoiceDropdown)}
@@ -155,7 +153,6 @@ const Navbar = ({ setToken }) => {
                     </div>
                   )}
                 </div>
-              )}
 
               <NavLink
                 to="/message"
@@ -168,7 +165,7 @@ const Navbar = ({ setToken }) => {
                 <FaMoneyCheckAlt /> Payments
               </NavLink>
               {/* User Dropdown */}
-              {user && (user.role === "admin" || user.role === "root") && (
+              {user && (user.role === "admin") && (
                 <div
                   className="dropdown"
                   onClick={() => setUserDropdown(!userDropdown)}

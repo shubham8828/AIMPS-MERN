@@ -79,7 +79,7 @@ const Profile = () => {
   const fetchUserData = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("https://aimps-server.vercel.app/api/user/current", { headers });
+      const res = await axios.get("http://localhost:4000/api/user/current", { headers });
       setUser(res.data.user);
       setFormData(res.data.user || {});
     } catch (error) {
@@ -141,7 +141,7 @@ const Profile = () => {
     }
 
     try {
-      await axios.put("https://aimps-server.vercel.app/api/user/update", formData, { headers });
+      await axios.put("http://localhost:4000/api/user/update", formData, { headers });
       toast.success("Profile updated successfully", { position: "top-center" });
     } catch (error) {
       toast.error("Failed to update profile", { position: "top-center" });
@@ -212,7 +212,8 @@ const Profile = () => {
             <input type="text" value={formData.role || ""} readOnly />
           </div>
 
-          {formData.role === "user" && (
+          {formData.role === "admin" && (
+            <>
             <div className="form-group">
               <label>Shop Name</label>
               <input
@@ -223,7 +224,7 @@ const Profile = () => {
                 required
               />
             </div>
-          )}
+          
 
           <div className="form-group">
             <label>Local Area</label>
@@ -274,6 +275,7 @@ const Profile = () => {
               required
             />
           </div>
+          </>)}
 
           <button type="submit" className="submit-btn">Update Profile</button>
         </form>
