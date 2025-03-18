@@ -45,7 +45,7 @@ const Navbar = ({ setToken }) => {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       };
-      const response = await axios.get("http://localhost:4000/api/user/current", {
+      const response = await axios.get("https://aimps-server.vercel.app/api/user/current", {
         headers,
       });
       if (response.status === 404) {

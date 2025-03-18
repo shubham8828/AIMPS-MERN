@@ -131,7 +131,7 @@ const Payment = () => {
         };
         // Sending payment data to the backend using axios
         const response = await axios.post(
-          "http://localhost:4000/api/payment/new",
+          "https://aimps-server.vercel.app/api/payment/new",
           { transactionData },
           { headers }
         );

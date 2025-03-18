@@ -28,7 +28,7 @@ const LineChart = () => {
         const token = localStorage.getItem('token'); // Get token from local storage
         const headers = { Authorization: `Bearer ${token}` };
 
-        const response = await axios.get("http://localhost:4000/api/user/all", { headers });
+        const response = await axios.get("https://aimps-server.vercel.app/api/user/all", { headers });
         const users = response.data.users;
 
         // Initialize an array to hold the user count for each month

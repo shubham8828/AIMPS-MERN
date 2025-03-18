@@ -32,7 +32,7 @@ const Message = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const usersResponse = await axios.get("http://localhost:4000/api/user/all", {
+      const usersResponse = await axios.get("https://aimps-server.vercel.app/api/user/all", {
         headers,
       });
       setUsers(usersResponse.data.users);
@@ -57,7 +57,7 @@ const Message = () => {
 
     axios
       .post(
-        "http://localhost:4000/api/message/all",
+        "https://aimps-server.vercel.app/api/message/all",
         { sender, receiver },
         { headers }
       )
@@ -103,7 +103,7 @@ const Message = () => {
     };
 
     axios
-      .post("http://localhost:4000/api/message/new", collectedData, { headers })
+      .post("https://aimps-server.vercel.app/api/message/new", collectedData, { headers })
       .then((response) => {
         console.log("Message sent:", response.data);
         // Optionally update state if needed with the saved message

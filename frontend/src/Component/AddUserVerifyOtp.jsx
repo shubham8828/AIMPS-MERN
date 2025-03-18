@@ -69,7 +69,7 @@ const AddUserVerifyOtp = () => {
           Authorization: `Bearer ${token}`,
         };
     
-      await axios.post("http://localhost:4000/api/user/add/verifyOtp", { email: data.email, otp: otp.join("") },{headers});
+      await axios.post("https://aimps-server.vercel.app/api/user/add/verifyOtp", { email: data.email, otp: otp.join("") },{headers});
       setShowAnimation(true);
     } catch {
       toast.error("Invalid OTP", { position: "top-center" });
@@ -80,7 +80,7 @@ const AddUserVerifyOtp = () => {
     toast.success("OTP verified successfully!", { position: "top-center" });
     try {
       const token = localStorage.getItem("token");
-      await axios.post("http://localhost:4000/api/user/add", data, { headers: { Authorization: `Bearer ${token}` } });
+      await axios.post("https://aimps-server.vercel.app/api/user/add", data, { headers: { Authorization: `Bearer ${token}` } });
       toast.success("User Added Successfully", { position: "top-center" });
       navigate("/", { replace: true });
     } catch {
@@ -92,7 +92,7 @@ const AddUserVerifyOtp = () => {
     if (resendTimer > 0) return;
     try {
       const token = localStorage.getItem("token");
-      await axios.post("http://localhost:4000/api/user/add/sendOtp", { email: data.email }, { headers: { Authorization: `Bearer ${token}` } });
+      await axios.post("https://aimps-server.vercel.app/api/user/add/sendOtp", { email: data.email }, { headers: { Authorization: `Bearer ${token}` } });
       toast.success("OTP sent successfully", { position: "top-center" });
       navigate("/user/add/otp-verification", { state: { payload: data }, replace: true });
       setResendTimer(60);

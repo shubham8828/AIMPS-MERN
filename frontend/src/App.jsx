@@ -44,7 +44,7 @@ const App = () => {
   useEffect(() => {
     if (token) {
       axios
-        .get("http://localhost:4000/api/user/current", {
+        .get("https://aimps-server.vercel.app/api/user/current", {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((response) => {

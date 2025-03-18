@@ -15,7 +15,7 @@ const Typing = () => {
     };
 
     axios
-      .get("http://localhost:4000/api/user/current", { headers })
+      .get("https://aimps-server.vercel.app/api/user/current", { headers })
       .then((response) => {
         const { user } = response.data;
         setUser(user);

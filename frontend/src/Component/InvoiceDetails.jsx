@@ -35,7 +35,7 @@ const InvoiceDetails = () => {
     const fetchUserData = async () => {
       try {
         const response = await axios.post(
-          "http://localhost:4000/api/invoice/get",
+          "https://aimps-server.vercel.app/api/invoice/get",
           { invoiceId },
           { headers }
         );

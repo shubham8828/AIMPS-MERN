@@ -35,7 +35,7 @@ const AddAdmin = () => {
     };
 
     axios
-      .post("http://localhost:4000/api/user/add/sendOtp", { email: formData.email }, { headers })
+      .post("https://aimps-server.vercel.app/api/user/add/sendOtp", { email: formData.email }, { headers })
       .then(() => {
         console.log(payload)
         toast.success("OTP sent successfully", { position: "top-center" });

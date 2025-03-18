@@ -82,7 +82,7 @@ const OtpVerification = () => {
     }
     setError("");
 
-      axios.post("http://localhost:4000/api/verify-otp", {email,otp: otp.join(""),
+      axios.post("https://aimps-server.vercel.app/api/verify-otp", {email,otp: otp.join(""),
       })
       .then(()=>{
         setShowAnimation(true)
@@ -102,7 +102,7 @@ const OtpVerification = () => {
   const handleResend = async () => {
     if (resendTimer > 0) return; // Prevent unnecessary calls
     try {
-      await axios.post("http://localhost:4000/api/send-otp", { email });
+      await axios.post("https://aimps-server.vercel.app/api/send-otp", { email });
       setResendTimer(60);
       setOtpExpireTimer(120);
       toast.success("OTP Resent Successfully!", { position: "top-center" });

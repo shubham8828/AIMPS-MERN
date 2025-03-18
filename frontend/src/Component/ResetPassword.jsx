@@ -26,7 +26,7 @@ const ResetPassword = () => {
     }
     const password=confirmPassword;
     
-    axios.post('http://localhost:4000/api/reset-password',{email,password})
+    axios.post('https://aimps-server.vercel.app/api/reset-password',{email,password})
     .then((res)=>{
       toast.success("Password reste successfully",{position:'top-center'})
       navigate("/login", { replace: true });

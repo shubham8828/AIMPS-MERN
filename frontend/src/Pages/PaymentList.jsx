@@ -27,7 +27,7 @@ const PaymentList = () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        "http://localhost:4000/api/payment/get",{ headers }
+        "https://aimps-server.vercel.app/api/payment/get",{ headers }
       );
       const fetchedData = response.data.data || [];
       setPaymentData(fetchedData); // Set full payment data
@@ -93,7 +93,7 @@ const PaymentList = () => {
       setLoading(true)
       await axios
         .post(
-          "http://localhost:4000/api/getInvoice",
+          "https://aimps-server.vercel.app/api/getInvoice",
           { invoiceId },
           { headers }
         )

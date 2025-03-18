@@ -20,7 +20,7 @@ const ForgetPassword = () => {
       setError("Enter a valid email address!");
     } else {
       setError("");
-      axios.post('http://localhost:4000/api/send-otp',{email})
+      axios.post('https://aimps-server.vercel.app/api/send-otp',{email})
       .then(()=>{
         toast.success("OTP sent successfully",{position:'top-center'});
         navigate("/otp-verification", { state: { email }, replace: true });

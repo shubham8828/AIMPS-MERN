@@ -63,7 +63,7 @@ const AuthForm = ({ setToken }) => {
 
     try {
       const { email, password } = formData;
-      const res = await axios.post("http://localhost:4000/api/login", { email, password });
+      const res = await axios.post("https://aimps-server.vercel.app/api/login", { email, password });
       localStorage.setItem("token", res.data.token);
       setToken(res.data.token);
       toast.success(res.data.msg, { position: "top-center" });
