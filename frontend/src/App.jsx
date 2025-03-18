@@ -5,6 +5,7 @@ import ForgetPassword from "./Component/ForgetPassword.jsx";
 import OtpVerification from "./Component/OtpVerification.jsx";
 import ResetPassword from "./Component/ResetPassword.jsx";
 import AddUserVerifyOtp from "./Component/AddUserVerifyOtp.jsx";
+import Sppiner from "./Component/Spinner.jsx";
 
 // Lazy Loaded Components
 const Navbar = React.lazy(() => import("./Component/Navbar.jsx"));
@@ -74,7 +75,7 @@ const App = () => {
 
   return (
     <BrowserRouter>
-      <Suspense fallback={<div>Loading...</div>}>
+      <Suspense fallback={<Sppiner/>}>
         <Navbar setToken={setToken} />
         <div className="main">
           <Routes>
